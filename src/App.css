@@ -5371,6 +5371,210 @@ main > .about-section {
 
 
 /* ==========================================================================
+   GENERATIVE AI PROMPT BAR & VIEWPORT SCANNER
+   ========================================================================== */
+
+/* Bounding box rendering state visual overrides */
+.brutal-bounding-box.active-rendering {
+  border: 1.5px solid #1473e6;
+  box-shadow: 0 0 32px rgba(20, 115, 230, 0.25);
+  background-color: rgba(10, 10, 12, 0.6);
+}
+
+.brutal-bounding-box.active-rendering .bbox-handle {
+  background-color: #1473e6;
+  border-color: #FFFFFF;
+}
+
+
+/* ── GENERATIVE PROMPT BAR CONTAINER ── */
+.generative-prompt-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0d0c0c;
+  border: 1.5px solid var(--text-dark);
+  box-shadow: 6px 6px 0px var(--text-dark);
+  border-radius: 12px;
+  padding: 10px 14px 10px 20px;
+  margin-top: 48px;
+  width: 100%;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 5;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.generative-prompt-bar.prompt-rendering {
+  border-color: #1473e6;
+  box-shadow: 0 8px 32px rgba(20, 115, 230, 0.2), 6px 6px 0px #1473e6;
+}
+
+.prompt-input-wrapper {
+  flex-grow: 1;
+  margin-right: 16px;
+  min-width: 0; /* Allows container to shrink dynamically */
+}
+
+.prompt-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #EEEEEE;
+  font-family: var(--font-sans);
+  font-size: clamp(0.72rem, 1.8vw, 0.84rem); /* Responsive scaling */
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  outline: none;
+  pointer-events: none;
+  white-space: normal; /* Enable wrapping */
+  word-break: break-word; /* Wrap long words cleanly */
+}
+
+.prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #C6C6C8;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-btn:hover {
+  color: #FFFFFF;
+}
+
+.dots-btn {
+  display: flex;
+  gap: 3px;
+  padding: 8px 4px;
+}
+
+.dots-btn .dot {
+  width: 3.5px;
+  height: 3.5px;
+  background-color: #C6C6C8;
+  border-radius: 50%;
+}
+
+.vertical-divider {
+  width: 1px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.cancel-btn {
+  color: #8E8E93;
+  font-weight: 500;
+  padding: 6px 12px;
+}
+
+.cancel-btn:not(:disabled):hover {
+  color: #FF4F4F;
+  text-shadow: 0 0 10px rgba(255, 79, 79, 0.3);
+}
+
+/* ── PREMIUM GENERATE BUTTON ANIMATION ── */
+.generate-btn {
+  background-color: #FFFFFF;
+  color: #000000;
+  border: 1px solid #FFFFFF;
+  border-radius: 100px; 
+  padding: 8px 22px;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden; /* hidden to crop our shimmer sweep */
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Premium diagonal metallic light sweep */
+.generate-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: buttonShimmerSweep 3s ease-in-out infinite;
+}
+
+
+.generate-btn:hover:not(:disabled) {
+  background-color: #FF4F4F;
+  border-color: #FF4F4F;
+  color: #FFFFFF;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 
+    0 8px 20px rgba(255, 79, 79, 0.45),
+    0 0 0 2px rgba(255, 79, 79, 0.2);
+}
+
+.generate-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Rendering Liquid compile state */
+.generate-btn.rendering {
+  background: linear-gradient(90deg, #1473e6, #0052cc, #1473e6) !important;
+  background-size: 200% 100% !important;
+  border-color: #1473e6 !important;
+  color: #ffffff !important;
+  animation: liquidGlow 1.5s linear infinite !important;
+  box-shadow: 0 0 24px rgba(20, 115, 230, 0.6) !important;
+}
+
+.generate-btn.rendering::after {
+  display: none; /* Hide shimmer sweep when rendering */
+}
+
+.generate-icon {
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+
+.generate-btn:hover:not(:disabled) .generate-icon {
+  transform: rotate(15deg) scale(1.15);
+}
+
+.spin-icon {
+  animation: rotateSpin 1s linear infinite;
+}
+
+/* Pulsing backdrop glow for the whole viewfinder when rendering */
+.orb-halo-spotlight.rendering {
+  animation: haloPulsateBlue 0.6s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(20, 115, 230, 0.4) 0%, transparent 70%);
+}
+
+.moon-photo-img.rendering {
+  filter: contrast(1.25) saturate(0.85) brightness(1.1);
+  box-shadow: 0 0 35px rgba(20, 115, 230, 0.55);
+}
+
+
+/* ==========================================================================
    MOBILE LAYOUT — ≤1024px
    Desktop side nav is hidden; mobile top bar + hamburger menu shown.
    NO desktop styles touched above this block.

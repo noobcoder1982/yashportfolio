@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Video } from 'lucide-react';
+import { Video, Sparkles, RefreshCw } from 'lucide-react';
 import moonHands from '../assets/moon_hands.jpg';
 
 export default function Hero() {
   const [coords, setCoords] = useState({ x: 0, y: 0 });
+  const [isRendering, setIsRendering] = useState(false);
+  const [renderPercent, setRenderPercent] = useState(0);
 
   const handleMouseMove = (e) => {
     if (!e.currentTarget) return;
@@ -11,6 +13,24 @@ export default function Hero() {
     const x = Math.floor(e.clientX - rect.left);
     const y = Math.floor(e.clientY - rect.top);
     setCoords({ x, y });
+  };
+
+  const handleGenerate = () => {
+    if (isRendering) return;
+    setIsRendering(true);
+    setRenderPercent(0);
+
+    let pct = 0;
+    const interval = setInterval(() => {
+      pct = Math.min(pct + Math.floor(Math.random() * 8) + 4, 100);
+      setRenderPercent(pct);
+      if (pct === 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsRendering(false);
+        }, 1200);
+      }
+    }, 45);
   };
 
   return (
@@ -40,7 +60,7 @@ export default function Hero() {
         
         {/* Bounding Box Viewfinder Selection */}
         <div 
-          className="brutal-bounding-box view-finder-box animate-float"
+          className={`brutal-bounding-box view-finder-box ${isRendering ? 'active-rendering' : 'animate-float'}`}
           style={{ 
             transform: `rotateX(${coords.y * -0.15}deg) rotateY(${coords.x * 0.15}deg) translate(${coords.x * 0.1}px, ${coords.y * 0.1}px)`,
           }}
@@ -90,6 +110,20 @@ export default function Hero() {
           {/* Cinematic Camera Viewfinder Crop Marks */}
           <div className="crop-mark mark-tl"></div>
           <div className="crop-mark mark-tr"></div>
+
+          {/* REAL-TIME INTERACTIVE SCANNER OVERLAY */}
+          {isRendering && (
+            <div className="viewfinder-laser-overlay">
+              <div className="viewfinder-laser-line" />
+              <div className="viewfinder-grid-lines" />
+              <div className="viewfinder-render-readout">
+                <span className="vrr-line">[ENGINE] COMPILING SHADER JOKES...</span>
+                <span className="vrr-line">[SYS] IGNORED 47 CLIENT EMAILS...</span>
+                <span className="vrr-line active-pct">BUFFER PROGRESS: {renderPercent}%</span>
+                <span className="vrr-line success-msg">{renderPercent === 100 ? '✓ CAFFEINE ENCODED SUCCESS' : '▸ RUNNING CINEMATIC PASS'}</span>
+              </div>
+            </div>
+          )}
           <div className="crop-mark mark-bl"></div>
           <div className="crop-mark mark-br"></div>
           <div className="viewfinder-crosshair">+</div>
@@ -110,11 +144,11 @@ export default function Hero() {
             
             {/* Glowing Moon Photo Visual */}
             <div className="glowing-orb-container">
-              <div className="orb-halo-spotlight"></div>
+              <div className={`orb-halo-spotlight ${isRendering ? 'rendering' : ''}`}></div>
               <img 
                 src={moonHands} 
                 alt="Realistic glowing moon cradled in hands" 
-                className="moon-photo-img"
+                className={`moon-photo-img ${isRendering ? 'rendering' : ''}`}
               />
             </div>
 
@@ -140,7 +174,35 @@ export default function Hero() {
 
         </div>
 
-
+        {/* Generative Floating AI Render Prompt Bar */}
+        <div className={`generative-prompt-bar ${isRendering ? 'prompt-rendering' : ''}`}>
+          <div className="prompt-input-wrapper">
+            <div className="prompt-input">
+              {isRendering ? `Encoding cinematic jokes and visual caffeine...` : "Generate cinematic edits that somehow make the client's 17th revision request make sense"}
+            </div>
+          </div>
+          <div className="prompt-actions">
+            <button className="action-btn dots-btn" aria-label="More options">
+              <span className="dot"></span>
+              <span className="dot"></span>
+              <span className="dot"></span>
+            </button>
+            <div className="vertical-divider"></div>
+            <button className="action-btn cancel-btn" onClick={() => setIsRendering(false)} disabled={!isRendering}>Cancel</button>
+            <button 
+              className={`action-btn generate-btn ${isRendering ? 'rendering' : ''}`}
+              onClick={handleGenerate}
+              disabled={isRendering}
+            >
+              {isRendering ? (
+                <RefreshCw size={14} className="generate-icon spin-icon" />
+              ) : (
+                <Sparkles size={14} className="generate-icon" />
+              )}
+              <span>{isRendering ? `Compiling ${renderPercent}%` : 'Generate'}</span>
+            </button>
+          </div>
+        </div>
 
       </div>
     </section>
