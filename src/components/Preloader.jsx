@@ -32,20 +32,20 @@ export default function Preloader({ onComplete }) {
   const secondsRemaining = Math.max(0, 3 - Math.floor((progress / 100) * 3));
   const timeRemainingStr = `00:00:0${secondsRemaining}`;
 
-  // Log message helper depending on export progress
-  const getRenderLog = (p) => {
-    if (p < 15) return `[SYS] Booting high-fidelity coffee engines...`;
-    if (p < 30) return `[ASSETS] Importing yash_sketch.png (and extra caffeine)...`;
-    if (p < 45) return `[ADOBE] Auto-saving every 1.5 seconds to prevent panic...`;
-    if (p < 60) return `[NAV] Syncing timeline frame rates to match heart rate...`;
-    if (p < 75) return `[MIXER] Overclocking bass to annoy the neighbors...`;
-    if (p < 90) return `[RENDER] Sweating over the final export pass...`;
-    if (p < 100) return `[SYS] Sweeping leftover pixel dust from screen...`;
-    return `[COMPLETED] Ready to launch Yar Yash Portfolio.`;
-  };
+  const stages = [
+    { threshold: 15, label: "Booting high-fidelity engines..." },
+    { threshold: 38, label: "Importing asset & narrative reels..." },
+    { threshold: 60, label: "Syncing sequence timeline FPS..." },
+    { threshold: 82, label: "Mixing narrative dynamic audio..." },
+    { threshold: 98, label: "Compiling final portfolio assembly..." }
+  ];
 
   return (
-    <div className={`preloader-overlay ${isExiting ? 'exit-slide-up' : ''}`}>
+    <div className={`preloader-overlay ${isExiting ? 'exit-curtain-open' : ''}`}>
+      
+      {/* Curtain Panels */}
+      <div className="preloader-curtain curtain-left"></div>
+      <div className="preloader-curtain curtain-right"></div>
       
       {/* Adobe Premiere Pro style Export Panel Window */}
       <div className="premiere-export-card">
@@ -82,9 +82,23 @@ export default function Preloader({ onComplete }) {
             </div>
 
             <div className="viewfinder-log-stream">
-              <span className="log-line muted">✓ Engine: CALIBRATED (24.00fps)</span>
-              <span className="log-line muted">✓ Audio: DYNAMIC_TRACK (LR Mix)</span>
-              <span className="log-line active-phase">{getRenderLog(progress)}</span>
+              <div className="log-line-item completed">
+                <span className="bullet">✓</span>
+                <span className="log-text strikethrough-active">SYS: CALIBRATED (24.00fps)</span>
+              </div>
+              {stages.map((stage, idx) => {
+                const isCompleted = progress > stage.threshold;
+                const isActive = progress >= (idx > 0 ? stages[idx - 1].threshold : 0) && progress <= stage.threshold;
+                
+                return (
+                  <div key={idx} className={`log-line-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}>
+                    <span className="bullet">{isCompleted ? '✓' : isActive ? '▶' : '○'}</span>
+                    <span className={`log-text ${isCompleted ? 'strikethrough-active' : ''}`}>
+                      {stage.label}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Dynamic pixel matrices that light up as we render */}

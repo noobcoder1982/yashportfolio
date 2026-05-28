@@ -3432,17 +3432,12 @@
 .preloader-overlay {
   position: fixed;
   inset: 0;
-  background-color: #0c0c0e; /* Deep obsidian slate black */
+  background-color: transparent;
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.65s cubic-bezier(0.85, 0, 0.15, 1);
   padding: 24px;
-}
-
-.preloader-overlay.exit-slide-up {
-  transform: translateY(-100%);
 }
 
 /* Premiere Pro Export Card Container */
@@ -5870,3 +5865,104 @@ main > .about-section {
     padding: 15px 16px;
   }
 }
+
+.preloader-overlay {
+  transition: visibility 0.8s ease;
+  pointer-events: all;
+}
+
+.preloader-overlay.exit-curtain-open {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Curtain panels */
+.preloader-curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background-color: #0c0c0e; /* Deep obsidian slate black */
+  z-index: -1;
+  transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+.preloader-curtain.curtain-left {
+  left: 0;
+  transform-origin: left;
+  border-right: 1px solid #1a1a1e;
+}
+
+.preloader-curtain.curtain-right {
+  right: 0;
+  transform-origin: right;
+  border-left: 1px solid #1a1a1e;
+}
+
+.preloader-overlay.exit-curtain-open .curtain-left {
+  transform: translateX(-100%);
+}
+
+.preloader-overlay.exit-curtain-open .curtain-right {
+  transform: translateX(100%);
+}
+
+.preloader-overlay.exit-curtain-open .premiere-export-card {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Viewfinder Log Stream Strikethrough classes */
+.log-line-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #55555a;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+}
+
+.log-line-item.active {
+  color: #1473e6; /* Active stage highlights in Premiere Blue */
+}
+
+.log-line-item.completed {
+  color: #88888c;
+}
+
+.log-line-item .bullet {
+  width: 12px;
+  display: inline-block;
+}
+
+.log-line-item.active .bullet {
+  color: #1473e6;
+}
+
+.log-line-item.completed .bullet {
+  color: #2ea44f; /* Green checkmark! */
+}
+
+.log-text {
+  position: relative;
+  display: inline-block;
+}
+
+.log-text::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 52%;
+  width: 0;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.log-text.strikethrough-active::after {
+  width: 100%;
+}
+
