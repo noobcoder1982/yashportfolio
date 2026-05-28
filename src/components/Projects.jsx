@@ -1,17 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowUpRight, Film, Sparkles, Volume2, Play, Activity, Monitor, Layers, ListFilter } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowUpRight, Film, Sparkles } from 'lucide-react';
 import ProjectDetailPage from './ProjectDetailPage';
 
 export default function Projects() {
-  const [filter, setFilter] = useState('all');
-  const [selectedIdx, setSelectedIdx] = useState(0);
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const [activeProjectIndex, setActiveProjectIndex] = useState(null);
-  const [monitorTimecode, setMonitorTimecode] = useState('00:00:00:00');
-  const [playheadPos, setPlayheadPos] = useState(12.5); // percentage along the timeline
-  const [eqHeights, setEqHeights] = useState([20, 30, 40, 20, 10]);
-
-  const eqIntervalRef = useRef(null);
+  const [originRect, setOriginRect] = useState(null);
+  const stripRefs = useRef([]);
 
   const projectsData = [
     {
@@ -20,13 +15,12 @@ export default function Projects() {
       tech: ['Premiere Pro', 'After Effects', 'Sound Design', 'Pacing'],
       category: 'commercial',
       number: '01',
-      color: '#FF2E2E', // Neon Red accent
-      timeRange: '00:00 - 00:05',
-      posStart: 2,
-      posWidth: 21,
+      color: '#FF2E2E',
       role: 'Lead Post-Production Artist',
       client: 'Apex Global Corp',
-      timeline: '4 Weeks (2026)',
+      timeline: '4 Weeks',
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      coverImage: '/commercial_cover.png',
       details: {
         tagline: 'Crafting the Visual Signature of a High-Octane Brand.',
         overview: 'A full-scale rebrand execution focusing on rhythmic precision, editorial identity systems, and dynamic logo reveals. The core objective was to turn dry corporate analytics into a captivating cinematic visual narrative that instantly retains viewer attention.',
@@ -50,12 +44,11 @@ export default function Projects() {
       category: 'narrative',
       number: '02',
       color: '#D84040',
-      timeRange: '00:05 - 00:10',
-      posStart: 26,
-      posWidth: 22,
       role: 'Cinematic Colorist & Editor',
       client: 'Vanguard Films',
-      timeline: '6 Weeks (2026)',
+      timeline: '6 Weeks',
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      coverImage: '/cinematic_cover.png',
       details: {
         tagline: 'Atmospheric storytelling crafted frame-by-frame.',
         overview: 'A cinematic anthology featuring deeply atmospheric visual grading, custom 35mm grain matching, and seamless multicam sequencing. Every scene was treated like a painting, adjusting highlights and midtones to provoke specific emotional cues.',
@@ -79,12 +72,11 @@ export default function Projects() {
       category: 'documentary',
       number: '03',
       color: '#1D1616',
-      timeRange: '00:10 - 00:15',
-      posStart: 51,
-      posWidth: 21,
       role: 'Script Writer & Narrative Editor',
       client: 'Independent Media Lab',
-      timeline: '8 Weeks (2026)',
+      timeline: '8 Weeks',
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      coverImage: '/documentary_cover.png',
       details: {
         tagline: 'Unearthing raw narratives through dialogue and structure.',
         overview: 'An editorial masterpiece blending archival 8mm footage with modern high-fidelity digital interviews. The focus was on script cohesion, structuring the timeline to let silent pauses build dramatic tension, and surgical audio leveling.',
@@ -108,12 +100,11 @@ export default function Projects() {
       category: 'social',
       number: '04',
       color: '#FF2E2E',
-      timeRange: '00:15 - 00:20',
-      posStart: 75,
-      posWidth: 23,
       role: 'Retention Specialist & Motion Designer',
       client: 'Influence Network',
       timeline: 'Ongoing',
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      coverImage: '/social_cover.png',
       details: {
         tagline: 'Hacking the human attention span with rapid-fire visuals.',
         overview: 'A set of viral shorts engineered for absolute retention. Utilizing dynamic, frame-by-frame text scale tracking, aggressive zoom sweeps, sound-effect markers, and high-retention visual hooks within the first 1.5 seconds.',
@@ -132,317 +123,110 @@ export default function Projects() {
     }
   ];
 
-  // Dynamic timecode & Audio VU levels simulated on active hover
-  useEffect(() => {
-    eqIntervalRef.current = setInterval(() => {
-      // Dance dynamic audio bars
-      setEqHeights([
-        Math.floor(Math.random() * 45) + 10,
-        Math.floor(Math.random() * 65) + 15,
-        Math.floor(Math.random() * 50) + 10,
-        Math.floor(Math.random() * 60) + 15,
-        Math.floor(Math.random() * 35) + 10
-      ]);
-
-      // Calculate timecode based on selected index
-      const baseSeconds = selectedIdx * 5;
-      const ms = String(Math.floor(Math.random() * 24)).padStart(2, '0');
-      const ss = String(baseSeconds + Math.floor(Math.random() * 5)).padStart(2, '0');
-      setMonitorTimecode(`00:00:${ss}:${ms}`);
-    }, 150);
-
-    return () => clearInterval(eqIntervalRef.current);
-  }, [selectedIdx]);
-
-  // Sync playhead to start center of the active block
-  const selectProject = (idx) => {
-    setSelectedIdx(idx);
-    const start = projectsData[idx].posStart;
-    const width = projectsData[idx].posWidth;
-    setPlayheadPos(start + width / 2);
-  };
-
-  const activeProject = projectsData[selectedIdx];
-  const filteredProjects = filter === 'all' 
-    ? projectsData 
-    : projectsData.filter(p => p.category === filter);
-
   return (
     <section id="projects" className="projects-section">
       <div className="container">
         
-        {/* Newspaper Style Editorial Header */}
+        {/* Stark Swiss Header */}
         <div className="editorial-header">
           <div className="editorial-meta">
             <span className="meta-tag"><Film size={12} /> PORTFOLIO 2026</span>
             <span className="meta-divider"></span>
-            <span className="meta-tag"><Sparkles size={12} /> SWISS EDITING SUITE</span>
+            <span className="meta-tag"><Sparkles size={12} /> KINETIC TYPOGRAPHY DISPATCH</span>
           </div>
           
           <div className="editorial-main-grid">
             <h2 className="editorial-title">Selected Cuts</h2>
             <div className="editorial-desc-box">
               <p>
-                Explore selected video works, showreels, and narrative cuts structured inside an interactive Swiss Non-Linear Editor timeline cockpit. Click any clip block to open its full workspace study.
+                A highly refined selection of motion work and pacing cuts. Hover a strip to select it with a stark dark outline, and click to watch the background spread into a cinematic dossier transition.
               </p>
             </div>
           </div>
         </div>
 
-        {/* NLE SUITE DASHBOARD WORKSPACE */}
-        <div className="nle-suite-workspace">
-          
-          {/* Main Top Grid Pane */}
-          <div className="nle-pane-grid">
+        {/* SWISS KINETIC DISPATCH STRIPS */}
+        <div className={`kinetic-cuts-list ${hoveredIdx !== null ? 'has-active-strip' : ''}`}>
+          {projectsData.map((project, idx) => {
+            const isHovered = hoveredIdx === idx;
+            const originalIndex = projectsData.findIndex(p => p.number === project.number);
             
-            {/* LEFT PANE: SOURCE MONITOR (PREVIEW AND HUD SYSTEM) */}
-            <div className="nle-pane-monitor">
-              
-              {/* Monitor Screen Header HUD */}
-              <div className="nle-monitor-header">
-                <span className="monitor-badge">
-                  <Monitor size={10} style={{ marginRight: '4px' }} />
-                  SOURCE VIEWPORT
-                </span>
-                <span className="monitor-filename">YASH_CUT_0{activeProject.number}.MOV</span>
-                <span className="monitor-timer font-mono text-neon">{monitorTimecode}</span>
-              </div>
+            return (
+              <div 
+                key={project.number} 
+                id={`kinetic-strip-${project.number}`}
+                ref={el => (stripRefs.current[idx] = el)}
+                className={`kinetic-cut-strip ${isHovered ? 'hovered' : ''}`}
+                onMouseEnter={() => setHoveredIdx(idx)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                onClick={(e) => {
+                  // Capture exact position BEFORE React opens the overlay
+                  const el = stripRefs.current[idx];
+                  if (el) {
+                    const rect = el.getBoundingClientRect();
+                    setOriginRect({
+                      top: rect.top,
+                      right: window.innerWidth - rect.right,
+                      bottom: window.innerHeight - rect.bottom,
+                      left: rect.left,
+                    });
+                  }
+                  setActiveProjectIndex(originalIndex);
+                }}
+              >
+                {/* Horizontal Divider Line */}
+                <div className="strip-border-line"></div>
 
-              {/* Viewport CRT simulation */}
-              <div className="nle-viewport-screen" onClick={() => setActiveProjectIndex(selectedIdx)}>
-                
-                {/* Viewport HUD overlays */}
-                <div className="viewport-overlay-hud">
-                  <div className="rec-blinker">
-                    <span className="rec-led"></span>
-                    <span>ONLINE</span>
+                <div className="strip-main-row">
+                  
+                  {/* Number & Basic info */}
+                  <div className="strip-index-block">
+                    <span className="strip-number font-mono">0{project.number}</span>
+                    <span className="strip-category-label uppercase">{project.category}</span>
                   </div>
-                  <span className="aspect-label">16:9 DNG</span>
-                </div>
 
-                {/* Viewport content */}
-                <div className="viewport-content-visual" style={{ backgroundColor: activeProject.color + '0a' }}>
-                  <div className="monitor-viewfinder-grid">
-                    <div className="grid-center-cross"></div>
-                    <div className="corner-bracket top-left"></div>
-                    <div className="corner-bracket top-right"></div>
-                    <div className="corner-bracket bottom-left"></div>
-                    <div className="corner-bracket bottom-right"></div>
+                  {/* Typographic Interlocked Title */}
+                  <div className="strip-title-block">
+                    <h3 className="strip-large-title">
+                      {project.title.split(' ').map((word, wIdx) => {
+                        if (
+                          word === 'commercial' || 
+                          word === 'cinematic' || 
+                          word === 'documentary' || 
+                          word === 'social'
+                        ) {
+                          return <span key={wIdx} className="strip-serif-italic">{word} </span>;
+                        }
+                        return <span key={wIdx}>{word} </span>;
+                      })}
+                    </h3>
                   </div>
 
-                  <div className="viewport-preview-card">
-                    <span className="preview-index-tag">CLIP // 0{activeProject.number}</span>
-                    <h3 className="preview-headline">{activeProject.title}</h3>
-                    <p className="preview-desc-tag">{activeProject.desc}</p>
-                    <span className="preview-action-tag">CLICK SCREEN TO LOAD EDIT TIMELINE ↗</span>
-                  </div>
-                </div>
-
-                {/* Bottom screen controls */}
-                <div className="viewport-status-footer">
-                  <div className="eq-level-indicator">
-                    <Volume2 size={12} className="eq-icon" />
-                    <div className="eq-meter-stack">
-                      {eqHeights.map((ht, i) => (
-                        <div key={i} className="eq-meter-bar" style={{ height: `${ht}%` }}></div>
-                      ))}
+                  {/* Micro Specs List */}
+                  <div className="strip-meta-list font-mono">
+                    <div className="meta-spec-row">
+                      <span className="lbl">ROLE</span>
+                      <span className="val">{project.role}</span>
+                    </div>
+                    <div className="meta-spec-row">
+                      <span className="lbl">CLIENT</span>
+                      <span className="val">{project.client}</span>
                     </div>
                   </div>
-                  <span className="viewport-scale-log">SCALE: 100% // SLOG3_ACTIVE</span>
-                </div>
 
-              </div>
-
-            </div>
-
-            {/* RIGHT PANE: PROJECT BIN & SPECIFICATIONS */}
-            <div className="nle-pane-specbin">
-              
-              <div className="bin-header">
-                <span className="bin-title">
-                  <Layers size={10} style={{ marginRight: '4px' }} />
-                  PROJECT BIN
-                </span>
-                
-                {/* Micro Genre Filter Stack */}
-                <div className="bin-filter-pills">
-                  {['all', 'commercial', 'narrative', 'documentary', 'social'].map((cat) => (
-                    <button
-                      key={cat}
-                      className={`bin-filter-pill ${filter === cat ? 'active' : ''}`}
-                      onClick={() => setFilter(cat)}
-                      title={`Filter by ${cat}`}
-                    >
-                      {cat.slice(0, 3)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Asset bin elements */}
-              <div className="bin-assets-list">
-                {filteredProjects.map((project) => {
-                  const isSel = project.number === activeProject.number;
-                  return (
-                    <div 
-                      key={project.number}
-                      className={`bin-asset-row ${isSel ? 'selected' : ''}`}
-                      onMouseEnter={() => {
-                        const originalIdx = projectsData.findIndex(p => p.number === project.number);
-                        selectProject(originalIdx);
-                      }}
-                      onClick={() => {
-                        const originalIdx = projectsData.findIndex(p => p.number === project.number);
-                        setActiveProjectIndex(originalIdx);
-                      }}
-                    >
-                      <div className="asset-thumb-box" style={{ borderColor: isSel ? '#FF2E2E' : 'currentColor' }}>
-                        <span>0{project.number}</span>
-                      </div>
-                      <div className="asset-meta-box">
-                        <span className="asset-title-text">{project.title}</span>
-                        <div className="asset-sub-row">
-                          <span className="asset-cat-badge">{project.category}</span>
-                          <span className="asset-time-range font-mono">{project.timeRange}</span>
-                        </div>
-                      </div>
-                      <div className="asset-arrow-trigger">
-                        <ArrowUpRight size={14} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Editorial Spec Info Card */}
-              <div className="bin-metadata-panel">
-                <span className="meta-panel-label">// LOADED_CLIP_SPECS</span>
-                <div className="bin-specs-grid">
-                  <div className="spec-item">
-                    <span className="spec-label">CLIENT</span>
-                    <span className="spec-val text-white">{activeProject.client}</span>
+                  {/* Action Arrow trigger */}
+                  <div className="strip-arrow-trigger">
+                    <span className="arrow-text-action font-mono">VIEW DOSSIER</span>
+                    <span className="arrow-icon-circle">
+                      <ArrowUpRight size={18} />
+                    </span>
                   </div>
-                  <div className="spec-item">
-                    <span className="spec-label">ROLE</span>
-                    <span className="spec-val text-white">{activeProject.role}</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label">TIMELINE</span>
-                    <span className="spec-val text-white">{activeProject.timeline}</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label">CODECS</span>
-                    <span className="spec-val text-white">ProRes 422 HQ</span>
-                  </div>
+
                 </div>
               </div>
-
-            </div>
-
-          </div>
-
-          {/* Bottom Pane: Timeline editing track cockpit */}
-          <div className="nle-pane-timeline">
-            
-            {/* Timeline Cockpit Ruler */}
-            <div className="timeline-cockpit-header">
-              <div className="timeline-lane-col">TRACKS</div>
-              <div className="timeline-ruler-col">
-                <div className="time-scale-tick" style={{ left: '0%' }}>00:00</div>
-                <div className="time-scale-tick" style={{ left: '25%' }}>00:05</div>
-                <div className="time-scale-tick" style={{ left: '50%' }}>00:10</div>
-                <div className="time-scale-tick" style={{ left: '75%' }}>00:15</div>
-                <div className="time-scale-tick" style={{ left: '98%' }}>00:20</div>
-              </div>
-            </div>
-
-            {/* Timeline track content and playhead */}
-            <div className="timeline-tracks-workspace">
-              
-              {/* Playhead Scrubber */}
-              <div className="timeline-scrubber-playhead" style={{ left: `${playheadPos}%` }}>
-                <div className="playhead-needle"></div>
-                <div className="playhead-line-track"></div>
-              </div>
-
-              {/* V2: Motion Graphics Track */}
-              <div className="timeline-track-row">
-                <div className="lane-header-col">V2 GRAPHICS</div>
-                <div className="lane-tracks-col">
-                  {projectsData.map((project, idx) => (
-                    <div 
-                      key={project.number}
-                      className={`timeline-clip-block block-v2 ${project.number === activeProject.number ? 'active' : ''}`}
-                      style={{ left: `${project.posStart}%`, width: `${project.posWidth}%` }}
-                      onMouseEnter={() => selectProject(idx)}
-                      onClick={() => setActiveProjectIndex(idx)}
-                    >
-                      <span>TYPO_OVERLAYS_AE_0{project.number}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* V1: Footage Track */}
-              <div className="timeline-track-row">
-                <div className="lane-header-col">V1 FOOTAGE</div>
-                <div className="lane-tracks-col">
-                  {projectsData.map((project, idx) => (
-                    <div 
-                      key={project.number}
-                      className={`timeline-clip-block block-v1 ${project.number === activeProject.number ? 'active' : ''}`}
-                      style={{ left: `${project.posStart}%`, width: `${project.posWidth}%` }}
-                      onMouseEnter={() => selectProject(idx)}
-                      onClick={() => setActiveProjectIndex(idx)}
-                    >
-                      <span>RAW_FOOTAGE_0{project.number}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* A1: Dialogue Track */}
-              <div className="timeline-track-row">
-                <div className="lane-header-col">A1 VOICE</div>
-                <div className="lane-tracks-col">
-                  {projectsData.map((project, idx) => (
-                    <div 
-                      key={project.number}
-                      className={`timeline-clip-block block-a1 ${project.number === activeProject.number ? 'active' : ''}`}
-                      style={{ left: `${project.posStart}%`, width: `${project.posWidth}%` }}
-                      onMouseEnter={() => selectProject(idx)}
-                      onClick={() => setActiveProjectIndex(idx)}
-                    >
-                      <span>DIALOGUE_VO_0{project.number}.WAV</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* A2: Sound Design Track */}
-              <div className="timeline-track-row">
-                <div className="lane-header-col">A2 SFX</div>
-                <div className="lane-tracks-col">
-                  {projectsData.map((project, idx) => (
-                    <div 
-                      key={project.number}
-                      className={`timeline-clip-block block-a2 ${project.number === activeProject.number ? 'active' : ''}`}
-                      style={{ left: `${project.posStart}%`, width: `${project.posWidth}%` }}
-                      onMouseEnter={() => selectProject(idx)}
-                      onClick={() => setActiveProjectIndex(idx)}
-                    >
-                      <span>WHOOSHES_IMPACTS.WAV</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
+            );
+          })}
         </div>
-
       </div>
 
       {/* FULLSCREEN WORK CASE STUDY OVERLAY PAGE */}
@@ -451,9 +235,25 @@ export default function Projects() {
           project={projectsData[activeProjectIndex]}
           projectIndex={activeProjectIndex}
           totalProjects={projectsData.length}
-          onClose={() => setActiveProjectIndex(null)}
+          originRect={originRect}
+          onClose={() => {
+            setActiveProjectIndex(null);
+            setOriginRect(null);
+          }}
           onNextProject={() => {
-            setActiveProjectIndex((prev) => (prev + 1) % projectsData.length);
+            // Capture origin of the NEXT strip before switching
+            const nextIdx = (activeProjectIndex + 1) % projectsData.length;
+            const nextEl = stripRefs.current[nextIdx];
+            if (nextEl) {
+              const rect = nextEl.getBoundingClientRect();
+              setOriginRect({
+                top: rect.top,
+                right: window.innerWidth - rect.right,
+                bottom: window.innerHeight - rect.bottom,
+                left: rect.left,
+              });
+            }
+            setActiveProjectIndex(nextIdx);
           }}
         />
       )}

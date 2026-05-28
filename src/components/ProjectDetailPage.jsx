@@ -1,20 +1,55 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, X, ArrowUpRight, RotateCcw, Volume2, Film, AlertTriangle, Palette } from 'lucide-react';
+import { Play, Pause, X, ArrowUpRight, RotateCcw, Volume2, Film, AlertTriangle, Palette, ExternalLink } from 'lucide-react';
 
-export default function ProjectDetailPage({ project, onClose, onNextProject, projectIndex, totalProjects }) {
+export default function ProjectDetailPage({ project, onClose, onNextProject, projectIndex, totalProjects, originRect }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [timecode, setTimecode] = useState('00:00:00:00');
   const [playProgress, setPlayProgress] = useState(0);
-  const [audioMeter, setAudioMeter] = useState([30, 20, 10]); // decibel bar heights
+  const [audioMeter, setAudioMeter] = useState([20, 15, 10]); 
+  const [isEntering, setIsEntering] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('neon'); // 'neon' | 'editorial' | 'matrix'
   
+  const overlayRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const playIntervalRef = useRef(null);
   const timecodeFramesRef = useRef(0);
+  const animRef = useRef(null);
 
-  // Transition handler for switching projects & mounting scroll triggers
+  // ── Curtain OPEN: runs from strip position → fullscreen ──────────────────
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el) return;
+
+    const T  = originRect?.top    ?? window.innerHeight * 0.45;
+    const R  = originRect?.right  ?? 0;
+    const B  = originRect?.bottom ?? window.innerHeight * 0.45;
+    const L  = originRect?.left   ?? 0;
+
+    // Start clipped to the strip's exact position, then expand
+    animRef.current = el.animate(
+      [
+        // Frame 0 — strip footprint
+        { clipPath: `inset(${T}px ${R}px ${B}px ${L}px)`, opacity: 0.7 },
+        // Frame 30% — spread left/right to full width, stay at strip's vertical band
+        { clipPath: `inset(${T}px 0px ${B}px 0px)`,       opacity: 1,   offset: 0.3 },
+        // Frame 100% — full screen
+        { clipPath: 'inset(0px 0px 0px 0px)',              opacity: 1 },
+      ],
+      { duration: 680, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+    );
+
+    // Reveal content exactly when curtain finishes
+    animRef.current.onfinish = () => setIsEntering(false);
+
+    return () => {
+      animRef.current?.cancel();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Smooth project transition handler
   useEffect(() => {
     setIsTransitioning(true);
     const t = setTimeout(() => setIsTransitioning(false), 300);
@@ -27,7 +62,7 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
     return () => clearTimeout(t);
   }, [project]);
 
-  // Lock body scroll when modal is open
+  // Prevent background scroll
   useEffect(() => {
     document.body.classList.add('project-details-active');
     document.body.style.overflow = 'hidden';
@@ -38,14 +73,12 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
     };
   }, []);
 
-  // Simulating timecode & audio level animation on playback
+  // Frame count & VU meter ticks
   useEffect(() => {
     if (isPlaying) {
       playIntervalRef.current = setInterval(() => {
-        // Increment frames
         timecodeFramesRef.current += 1;
         
-        // Formulate typical 24fps timecode: HH:MM:SS:FF
         const totalFrames = timecodeFramesRef.current;
         const ff = String(totalFrames % 24).padStart(2, '0');
         const totalSeconds = Math.floor(totalFrames / 24);
@@ -56,7 +89,6 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
         
         setTimecode(`${hh}:${mm}:${ss}:${ff}`);
         
-        // Progress (loops back at 100%)
         const nextProgress = (totalFrames / 360) * 100; // 15-second loop
         if (nextProgress >= 100) {
           timecodeFramesRef.current = 0;
@@ -65,16 +97,16 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
           setPlayProgress(nextProgress);
         }
 
-        // Dance audio level meters
+        // Kinetic audio VU values
         setAudioMeter([
-          Math.floor(Math.random() * 80) + 15,
-          Math.floor(Math.random() * 65) + 15,
-          Math.floor(Math.random() * 50) + 10
+          Math.floor(Math.random() * 70) + 20,
+          Math.floor(Math.random() * 55) + 15,
+          Math.floor(Math.random() * 45) + 10
         ]);
-      }, 1000 / 24); // 24 FPS
+      }, 1000 / 24);
     } else {
       clearInterval(playIntervalRef.current);
-      setAudioMeter([15, 10, 5]); // resting audio
+      setAudioMeter([15, 10, 5]);
     }
 
     return () => clearInterval(playIntervalRef.current);
@@ -93,21 +125,46 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
   };
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
+    const el = overlayRef.current;
+    if (!el) {
       onClose();
-    }, 450); // Matches smooth CSS slide-out delay
+      return;
+    }
+
+    const T  = originRect?.top    ?? window.innerHeight * 0.45;
+    const R  = originRect?.right  ?? 0;
+    const B  = originRect?.bottom ?? window.innerHeight * 0.45;
+    const L  = originRect?.left   ?? 0;
+
+    // Reverse: fullscreen → strip footprint
+    animRef.current?.cancel();
+    animRef.current = el.animate(
+      [
+        { clipPath: 'inset(0px 0px 0px 0px)',              opacity: 1 },
+        { clipPath: `inset(${T}px 0px ${B}px 0px)`,       opacity: 1,   offset: 0.55 },
+        { clipPath: `inset(${T}px ${R}px ${B}px ${L}px)`, opacity: 0 },
+      ],
+      { duration: 620, easing: 'cubic-bezier(0.7, 0, 0.84, 0)', fill: 'forwards' }
+    );
+
+    animRef.current.onfinish = () => onClose();
   };
 
+
+
   return (
-    <div className={`project-detail-overlay theme-${currentTheme} ${isClosing ? 'closing' : ''}`}>
+    <div 
+      ref={overlayRef}
+      className={`project-detail-overlay theme-${currentTheme} ${isEntering ? 'entering' : ''}`}
+      style={{ clipPath: 'inset(0px 0px 0px 0px)' }}
+    >
       <div ref={scrollContainerRef} className={`project-detail-scroll-container ${isTransitioning ? 'transition-flash' : ''}`}>
         
         {/* TOP STATUS NAVIGATION BAR */}
         <div className="detail-top-nav">
           <div className="top-nav-left">
             <span className="status-indicator"></span>
-            <span className="workspace-tag">WORKSPACE: CASE_STUDY_{project.number} // YASH_PORTFOLIO</span>
+            <span className="workspace-tag font-mono">WORKSPACE: CUT_DOSSIER_0{project.number} // PORTFOLIO_2026</span>
           </div>
           <div className="detail-top-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button 
@@ -133,12 +190,17 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
         {/* HERO SECTION */}
         <header className="detail-hero-section">
           <div className="container">
-            <div className="hero-index-badge">// 01_SELECTED_CUT</div>
+            <div className="hero-index-badge">// 0{project.number} _ SELECTED_CUT</div>
             
             <h1 className="detail-main-title">
               {project.title.split(' ').map((word, i) => {
-                // Style one of the words beautifully with Playfair Display Italic to keep consistency
-                if (i === 0) {
+                if (
+                  word === 'commercial' || 
+                  word === 'cinematic' || 
+                  word === 'documentary' || 
+                  word === 'social' ||
+                  i === 0
+                ) {
                   return <span key={i} className="title-serif-italic">{word} </span>;
                 }
                 return <span key={i}>{word} </span>;
@@ -166,207 +228,453 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
           </div>
         </header>
 
-        {/* INTERACTIVE WORKSPACE MONITOR & TIMELINE */}
-        <section className="timeline-monitor-section">
+        {/* MINIMAL CINEMATIC VIEWPORT DECK (Completely replaced DaVinci Timeline block) */}
+        <section className="timeline-monitor-section" style={{ padding: '48px 0' }}>
           <div className="container">
             
-            {/* Editing Suite Grid */}
-            <div className="editing-suite-card">
+            <div className="cinematic-viewport-card" style={{
+              backgroundColor: 'var(--detail-card-bg)',
+              border: '2px solid var(--detail-line)',
+              boxShadow: '8px 8px 0px var(--detail-shadow)',
+              overflow: 'hidden',
+              borderRadius: 'var(--radius-sm)',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
               
-              {/* SOURCE MONITOR (Viewport) */}
-              <div className="source-monitor">
+              {/* CINEMATIC MONITOR HEADER */}
+              <div className="source-monitor" style={{
+                backgroundColor: '#000000',
+                borderBottom: '2px solid var(--detail-line)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 20px',
+                fontFamily: 'var(--font-mono)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span className="hud-badge active-rec" style={{
+                    backgroundColor: 'rgba(255, 46, 46, 0.15)',
+                    color: 'var(--detail-accent)',
+                    border: '1px solid var(--detail-accent)',
+                    borderRadius: '4px',
+                    padding: '2px 8px',
+                    fontSize: '0.62rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <span className="hud-rec-dot" style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--detail-accent)',
+                      boxShadow: '0 0 6px var(--detail-accent)',
+                      display: 'inline-block'
+                    }}></span>
+                    REC
+                  </span>
+                  <span style={{ fontSize: '0.62rem', color: 'rgba(255, 255, 255, 0.4)' }}>ASPECT_RATIO: 2.39:1 CINEMASCOPE</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--detail-accent)', fontWeight: 700, letterSpacing: '0.05em' }}>{timecode}</span>
+                </div>
+              </div>
+
+              {/* VIEWPORT SCREEN */}
+              <div className="viewport-screen" style={{
+                position: 'relative',
+                aspectRatio: '16/9',
+                backgroundColor: '#050505',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%'
+              }}>
                 
-                {/* Viewport Overlay HUD */}
-                <div className="viewport-hud">
-                  <div className="hud-left">
-                    <span className="hud-badge active-rec">
-                      <span className="hud-rec-dot"></span>
-                      REC
-                    </span>
-                    <span className="hud-cam-model">YASH_CAM_1</span>
+                {/* Viewfinder crosshairs & corner crop markings */}
+                <div className="viewport-grid-lines" style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  pointerEvents: 'none',
+                  zIndex: 20
+                }}>
+                  <div className="viewport-brackets" style={{
+                    position: 'absolute',
+                    top: '16px',
+                    left: '16px',
+                    right: '16px',
+                    bottom: '16px'
+                  }}>
+                    <div className="bracket b-top-left" style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '14px',
+                      height: '14px',
+                      borderLeft: '2px solid var(--detail-accent)',
+                      borderTop: '2px solid var(--detail-accent)'
+                    }}></div>
+                    <div className="bracket b-bottom-right" style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      width: '14px',
+                      height: '14px',
+                      borderRight: '2px solid var(--detail-accent)',
+                      borderBottom: '2px solid var(--detail-accent)'
+                    }}></div>
                   </div>
-                  <div className="hud-right">
-                    <span className="hud-timecode">{timecode}</span>
-                  </div>
-                </div>
-
-                {/* Viewport Screen Content */}
-                <div className="viewport-screen">
                   
-                  {/* Viewport Overlay Reticle grid lines */}
-                  <div className="viewport-grid-lines">
-                    <div className="grid-h"></div>
-                    <div className="grid-v"></div>
-                    <div className="viewport-crosshair"></div>
-                  </div>
-
-                  {/* Animated Frame Content depending on playback */}
-                  <div className={`viewport-video-simulation ${isPlaying ? 'playing' : ''}`}>
-                    {isPlaying ? (
-                      <div className="simulated-motion-graphics">
-                        {/* Film Burn Layer */}
-                        <div className="film-burn-effect"></div>
-                        {/* Dynamic Grid elements flashing */}
-                        <div className="gfx-scanning-bar"></div>
-                        <div className="gfx-elements-container">
-                          <span className="gfx-box-marker"></span>
-                          <span className="gfx-index-number">CLIP_INDEX: 00{project.number}</span>
-                          <span className="gfx-time-tracker">{timecode}</span>
-                          <div className="gfx-soundbar-oscillate">
-                            <div className="oscillate-bar" style={{ height: `${audioMeter[0]}%` }}></div>
-                            <div className="oscillate-bar" style={{ height: `${audioMeter[1]}%` }}></div>
-                            <div className="oscillate-bar" style={{ height: `${audioMeter[2]}%` }}></div>
-                            <div className="oscillate-bar" style={{ height: `${audioMeter[1] * 0.8}%` }}></div>
-                            <div className="oscillate-bar" style={{ height: `${audioMeter[0] * 0.5}%` }}></div>
-                          </div>
-                        </div>
-                        <p className="playback-overlay-text">EDITING SEQUENCE ACTIVE</p>
-                      </div>
-                    ) : (
-                      <div className="simulated-stills">
-                        <div className="viewport-still-poster" style={{ backgroundColor: project.color + '22' }}>
-                          <Film size={48} className="poster-film-icon" />
-                          <p className="poster-title-text">{project.title.toUpperCase()}</p>
-                          <p className="poster-sub-text">TIMELINE PAUSED // PRESS PLAY FOR MOTION SIMULATION</p>
-                        </div>
-                      </div>
-                    )}
+                  {/* Subtle Grid Lines */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '10%',
+                    right: '10%',
+                    height: '1px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)'
+                  }}></div>
+                  <div style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '10%',
+                    bottom: '10%',
+                    width: '1px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)'
+                  }}></div>
+                  
+                  {/* Center Cross Reticle */}
+                  <div className="viewport-crosshair" style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    width: '24px',
+                    height: '24px',
+                    transform: 'translate(-50%, -50%)',
+                    border: '1px dashed rgba(255, 255, 255, 0.12)',
+                    borderRadius: '50%'
+                  }}>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', width: '6px', height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.3)', transform: 'translate(-50%, -50%)' }}></div>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', width: '1px', height: '6px', backgroundColor: 'rgba(255, 255, 255, 0.3)', transform: 'translate(-50%, -50%)' }}></div>
                   </div>
                 </div>
 
-                {/* Viewport Control Panel Bar */}
-                <div className="viewport-controls-bar">
-                  <div className="viewport-status-message">
-                    {isPlaying ? (
-                      <span className="status-playing"><span className="pulse-circle animate-pulse"></span>PLAYING // SOURCE MONITOR LINKED</span>
-                    ) : (
-                      <span className="status-paused">PAUSED // STANDBY</span>
-                    )}
+                {/* VIEWPORT MEDIA PLAYER OVERLAY */}
+                <div className="viewport-media-container" style={{ width: '100%', height: '100%' }}>
+                  {isPlaying && project.driveLink ? (
+                    <iframe 
+                      src={project.driveLink} 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                        position: 'relative',
+                        zIndex: 10
+                      }} 
+                      allow="autoplay; encrypted-media; picture-in-picture" 
+                      allowFullScreen
+                      title={project.title}
+                    ></iframe>
+                  ) : isPlaying ? (
+                    <div className="viewport-simulation-graphic" style={{
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: '#090909',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative'
+                    }}>
+                      <div className="film-burn-effect" style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'radial-gradient(circle, var(--detail-accent) 0%, rgba(0,0,0,0) 80%)',
+                        opacity: 0.15,
+                        pointerEvents: 'none'
+                      }}></div>
+                      <div style={{
+                        position: 'absolute',
+                        top: '0',
+                        left: '0',
+                        width: '100%',
+                        height: '2px',
+                        backgroundColor: 'var(--detail-accent)',
+                        boxShadow: '0 0 10px var(--detail-accent)',
+                        animation: 'scanTimeline 2.5s linear infinite'
+                      }}></div>
+                      
+                      <Film size={36} className="poster-film-icon" style={{
+                        color: 'var(--detail-accent)',
+                        marginBottom: '16px',
+                        animation: 'rotateSpin 6s linear infinite'
+                      }} />
+                      
+                      <p className="playback-simulation-title" style={{
+                        fontSize: '1.1rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.05em',
+                        color: '#ffffff',
+                        margin: '0 0 6px'
+                      }}>EDITING SEQUENCE ACTIVE</p>
+                      
+                      <p className="playback-simulation-desc font-mono" style={{
+                        fontSize: '0.65rem',
+                        color: 'rgba(255, 255, 255, 0.45)',
+                        margin: 0
+                      }}>
+                        {project.driveLink ? 'STREAMING EMBEDDED CLIP' : 'PASTE GOOGLE DRIVE PREVIEW LINK TO EMBED DIRECTLY'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="viewport-poster-graphic" style={{
+                      width: '100%',
+                      height: '100%',
+                      background: `linear-gradient(135deg, #050505 0%, ${project.color || 'var(--detail-accent)'}15 100%)`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'0.03\'/%3E%3C/svg%3E")',
+                        pointerEvents: 'none'
+                      }}></div>
+                      
+                      <h3 style={{
+                        fontSize: 'clamp(2rem, 6vw, 4.5rem)',
+                        fontWeight: 900,
+                        color: 'rgba(255, 255, 255, 0.03)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '-0.04em',
+                        position: 'absolute',
+                        margin: 0,
+                        userSelect: 'none'
+                      }}>{project.category}</h3>
+
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: 'var(--detail-accent)',
+                        border: '1px solid var(--detail-accent)',
+                        padding: '4px 10px',
+                        borderRadius: '3px',
+                        marginBottom: '16px',
+                        letterSpacing: '0.1em'
+                      }}>CUT_INDEX_0{project.number}</span>
+
+                      <button 
+                        onClick={togglePlay}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          backgroundColor: 'var(--detail-text)',
+                          color: 'var(--detail-bg)',
+                          border: 'none',
+                          padding: '16px 28px',
+                          borderRadius: '50px',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '0.85rem',
+                          fontWeight: 800,
+                          letterSpacing: '0.02em',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
+                          transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                          zIndex: 10
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)';
+                          e.currentTarget.style.boxShadow = '0 15px 30px rgba(255, 46, 46, 0.15)';
+                          e.currentTarget.style.backgroundColor = 'var(--detail-accent)';
+                          e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                          e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.4)';
+                          e.currentTarget.style.backgroundColor = 'var(--detail-text)';
+                          e.currentTarget.style.color = 'var(--detail-bg)';
+                        }}
+                      >
+                        <Play size={16} fill="currentColor" />
+                        <span>ENTER CINEMATIC VIEWPORT</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* VIEWPORT CONTROLS / CALIBRATION DECK */}
+              <div className="viewport-deck-controls" style={{
+                backgroundColor: 'var(--detail-card-bg)',
+                padding: '18px 24px',
+                borderTop: '1.5px solid var(--detail-line)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px'
+              }}>
+                
+                {/* Timeline progress line bar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <button 
+                    onClick={togglePlay}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--detail-text)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: 0
+                    }}
+                  >
+                    {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+                  </button>
+
+                  <button 
+                    onClick={resetTimeline}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--detail-text-muted)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: 0
+                    }}
+                    title="Rewind Timeline"
+                  >
+                    <RotateCcw size={14} />
+                  </button>
+
+                  {/* High end minimalist progress lane */}
+                  <div style={{
+                    flex: 1,
+                    height: '2px',
+                    backgroundColor: 'var(--detail-pane-border)',
+                    position: 'relative',
+                    cursor: 'pointer'
+                  }}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const percentage = (clickX / rect.width) * 100;
+                    setPlayProgress(percentage);
+                    timecodeFramesRef.current = Math.floor((percentage / 100) * 360);
+                  }}
+                  >
+                    <div style={{
+                      height: '100%',
+                      width: `${playProgress}%`,
+                      backgroundColor: 'var(--detail-accent)',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      transition: 'width 0.1s linear'
+                    }}></div>
+                    <div style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--detail-accent)',
+                      position: 'absolute',
+                      top: '-2px',
+                      left: `${playProgress}%`,
+                      transform: 'translateX(-50%)',
+                      boxShadow: '0 0 6px var(--detail-accent)',
+                      transition: 'left 0.1s linear'
+                    }}></div>
                   </div>
 
-                  <div className="viewport-main-btns">
-                    <button className="viewport-btn control-reset" onClick={resetTimeline} title="Rewind to start">
-                      <RotateCcw size={16} />
-                    </button>
-                    <button className={`viewport-btn control-play ${isPlaying ? 'active-play' : ''}`} onClick={togglePlay}>
-                      {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" style={{ marginLeft: '2px' }} />}
-                    </button>
-                  </div>
+                  <span className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--detail-text)', fontWeight: 700 }}>
+                    {timecode}
+                  </span>
+                </div>
 
-                  {/* Audio HUD Decibel Levels */}
-                  <div className="viewport-audio-hud">
-                    <Volume2 size={14} className="vol-icon" />
-                    <div className="db-meter-stack">
-                      {audioMeter.map((ht, idx) => (
-                        <div key={idx} className="db-meter-track">
-                          <div className="db-meter-fill" style={{ height: `${ht}%` }}></div>
+                {/* Sub specs/VU indicators row */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderTop: '1px dashed var(--detail-pane-border)',
+                  paddingTop: '12px'
+                }}>
+                  {/* Left: VU level indicator */}
+                  <div className="deck-audio-monitor" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.62rem'
+                  }}>
+                    <Volume2 size={12} style={{ color: 'var(--detail-text-muted)' }} />
+                    <div style={{ display: 'flex', gap: '2px', height: '14px', alignItems: 'flex-end' }}>
+                      {audioMeter.map((val, idx) => (
+                        <div key={idx} style={{
+                          width: '4px',
+                          height: '100%',
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          position: 'relative'
+                        }}>
+                          <div style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            width: '100%',
+                            height: `${val}%`,
+                            backgroundColor: 'var(--detail-accent)',
+                            transition: 'height 0.05s ease'
+                          }}></div>
                         </div>
                       ))}
                     </div>
-                    <span className="db-val">L_R CH</span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* TIMELINE TRACKS PANEL */}
-              <div className="timeline-tracks-editor">
-                
-                {/* Timeline Header (Time scales) */}
-                <div className="timeline-tracks-header">
-                  <div className="timeline-tracks-title">
-                    <span>EDITING TRACKS TIMELINE</span>
-                  </div>
-                  
-                  <div className="timeline-ruler-track">
-                    <div className="ruler-marker" style={{ left: '0%' }}>00:00</div>
-                    <div className="ruler-marker" style={{ left: '25%' }}>00:03</div>
-                    <div className="ruler-marker" style={{ left: '50%' }}>00:07</div>
-                    <div className="ruler-marker" style={{ left: '75%' }}>00:11</div>
-                    <div className="ruler-marker" style={{ left: '100%' }}>00:15</div>
-                  </div>
-                </div>
-
-                {/* Timeline Main Track Lanes */}
-                <div className="timeline-lanes">
-                  
-                  {/* Playhead Marker */}
-                  <div className="timeline-playhead" style={{ left: `${playProgress}%` }}>
-                    <div className="playhead-pointer"></div>
-                    <div className="playhead-line"></div>
+                    <span style={{ color: 'var(--detail-text-dim)' }}>CH_VU_CALIBRATION</span>
                   </div>
 
-                  {/* Lane 1: Video A-Roll */}
-                  <div className="timeline-lane-row">
-                    <div className="lane-label">V2 GRAPHICS</div>
-                    <div className="lane-track-content">
-                      <div className="lane-clip-block clip-v2" style={{ left: '15%', width: '40%' }}>
-                        <span>TYPO_OVERLAYS_AE</span>
-                      </div>
-                      <div className="lane-clip-block clip-v2" style={{ left: '65%', width: '25%' }}>
-                        <span>DYNAMIC_LOGO</span>
-                      </div>
-                    </div>
+                  {/* Right: Actions */}
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    {project.driveLink && (
+                      <a 
+                        href={project.driveLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.65rem',
+                          color: 'var(--detail-text)',
+                          textDecoration: 'none',
+                          fontWeight: 700,
+                          borderBottom: '1px solid var(--detail-accent)',
+                          paddingBottom: '2px'
+                        }}
+                      >
+                        <span>OPEN DRIVE SOURCE</span>
+                        <ExternalLink size={10} />
+                      </a>
+                    )}
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--detail-text-dim)' }}>
+                      STATUS: {isPlaying ? 'STREAMING_PLAYBACK' : 'STANDBY'}
+                    </span>
                   </div>
-
-                  {/* Lane 2: Video B-Roll */}
-                  <div className="timeline-lane-row">
-                    <div className="lane-label">V1 FOOTAGE</div>
-                    <div className="lane-track-content">
-                      <div className="lane-clip-block clip-v1" style={{ left: '0%', width: '35%' }}>
-                        <span>CAM1_SLOG3_A_ROLL</span>
-                      </div>
-                      <div className="lane-clip-block clip-v1" style={{ left: '38%', width: '32%' }}>
-                        <span>CAM2_CU_B_ROLL</span>
-                      </div>
-                      <div className="lane-clip-block clip-v1" style={{ left: '72%', width: '28%' }}>
-                        <span>CAM1_FINAL_EXIT</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Lane 3: Audio Dialogue */}
-                  <div className="timeline-lane-row">
-                    <div className="lane-label">A1 VOICE</div>
-                    <div className="lane-track-content">
-                      <div className="lane-clip-block clip-a1" style={{ left: '0%', width: '55%' }}>
-                        <span>VO_DIALOGUE_CLEAN_MIX</span>
-                      </div>
-                      <div className="lane-clip-block clip-a1" style={{ left: '60%', width: '35%' }}>
-                        <span>VO_OUTRO_CUE</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Lane 4: Audio Sound FX */}
-                  <div className="timeline-lane-row">
-                    <div className="lane-label">A2 SOUND_FX</div>
-                    <div className="lane-track-content">
-                      <div className="lane-clip-block clip-a2" style={{ left: '15%', width: '8%' }}>
-                        <span>WHOOSH</span>
-                      </div>
-                      <div className="lane-clip-block clip-a2" style={{ left: '35%', width: '6%' }}>
-                        <span>CLICK_HIT</span>
-                      </div>
-                      <div className="lane-clip-block clip-a2" style={{ left: '55%', width: '10%' }}>
-                        <span>CINEMATIC_HIT</span>
-                      </div>
-                      <div className="lane-clip-block clip-a2" style={{ left: '72%', width: '8%' }}>
-                        <span>SWOOSH</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Lane 5: Audio Music Track */}
-                  <div className="timeline-lane-row">
-                    <div className="lane-label">A3 MUSIC</div>
-                    <div className="lane-track-content">
-                      <div className="lane-clip-block clip-a3" style={{ left: '0%', width: '100%' }}>
-                        <span>HIGH_ENERGY_PULSE_STEREO.WAV [BEAT_SYNCED]</span>
-                      </div>
-                    </div>
-                  </div>
-
                 </div>
 
               </div>
@@ -420,6 +728,10 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
                         <span className="stat-item-value">{stat.value}</span>
                       </div>
                     ))}
+                    <div className="stat-brutal-item">
+                      <span className="stat-item-label">SOFTWARE LIST</span>
+                      <span className="stat-item-value">{project.tech.join(', ')}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -459,7 +771,7 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
               <button className="pag-btn next-project" onClick={onNextProject}>
                 <span className="pag-dir">NEXT CASE STUDY →</span>
                 <span className="pag-desc">
-                  PROJECT {projectIndex + 2 > totalProjects ? '01' : String(projectIndex + 2).padStart(2, '0')} // {projectIndex + 2 > totalProjects ? 'COMMERCIAL' : 'VIEW'}
+                  PROJECT {projectIndex + 2 > totalProjects ? '01' : String(projectIndex + 2).padStart(2, '0')} // VIEW
                 </span>
               </button>
 
