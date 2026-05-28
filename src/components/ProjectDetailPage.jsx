@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, X, ArrowUpRight, RotateCcw, Volume2, Film, AlertTriangle } from 'lucide-react';
+import { Play, Pause, X, ArrowUpRight, RotateCcw, Volume2, Film, AlertTriangle, Palette } from 'lucide-react';
 
 export default function ProjectDetailPage({ project, onClose, onNextProject, projectIndex, totalProjects }) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -8,6 +8,7 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
   const [audioMeter, setAudioMeter] = useState([30, 20, 10]); // decibel bar heights
   const [isClosing, setIsClosing] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('neon'); // 'neon' | 'editorial' | 'matrix'
   
   const scrollContainerRef = useRef(null);
   const playIntervalRef = useRef(null);
@@ -99,7 +100,7 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
   };
 
   return (
-    <div className={`project-detail-overlay ${isClosing ? 'closing' : ''}`}>
+    <div className={`project-detail-overlay theme-${currentTheme} ${isClosing ? 'closing' : ''}`}>
       <div ref={scrollContainerRef} className={`project-detail-scroll-container ${isTransitioning ? 'transition-flash' : ''}`}>
         
         {/* TOP STATUS NAVIGATION BAR */}
@@ -108,10 +109,25 @@ export default function ProjectDetailPage({ project, onClose, onNextProject, pro
             <span className="status-indicator"></span>
             <span className="workspace-tag">WORKSPACE: CASE_STUDY_{project.number} // YASH_PORTFOLIO</span>
           </div>
-          <button className="detail-close-btn" onClick={handleClose} aria-label="Close Case Study">
-            <span className="close-text">CLOSE WORK</span>
-            <span className="close-icon-box"><X size={16} /></span>
-          </button>
+          <div className="detail-top-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button 
+              className="detail-theme-btn" 
+              onClick={() => {
+                const themes = ['neon', 'editorial', 'matrix'];
+                const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
+                setCurrentTheme(themes[nextIndex]);
+              }}
+              title="Toggle Brutalist Theme"
+            >
+              <span className="theme-btn-label">THEME: {currentTheme.toUpperCase()}</span>
+              <span className="theme-btn-icon"><Palette size={14} /></span>
+            </button>
+
+            <button className="detail-close-btn" onClick={handleClose} aria-label="Close Case Study">
+              <span className="close-text">CLOSE WORK</span>
+              <span className="close-icon-box"><X size={16} /></span>
+            </button>
+          </div>
         </div>
 
         {/* HERO SECTION */}

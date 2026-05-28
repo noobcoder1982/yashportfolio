@@ -1780,3 +1780,389 @@ body.project-details-active .seekbar-wrapper {
   background-color: #FF2E2E !important; /* NEON RED BANNER */
   color: #ffffff !important;
 }
+
+
+/* ==========================================================================
+   BRUTALIST MULTI-THEME ENGINE (NEON, EDITORIAL, MATRIX)
+   ========================================================================== */
+
+/* Theme 1: Neon Edition (Pitch Black & Vibrant Red) */
+.project-detail-overlay.theme-neon {
+  --detail-bg: #000000;
+  --detail-text: #ffffff;
+  --detail-accent: #FF2E2E;
+  --detail-line: #ffffff;
+  --detail-shadow: #FF2E2E;
+  --detail-card-bg: #040404;
+  --detail-text-muted: rgba(255, 255, 255, 0.6);
+  --detail-text-dim: rgba(255, 255, 255, 0.4);
+  --detail-pane-border: rgba(255, 255, 255, 0.15);
+}
+
+/* Theme 2: Editorial Edition (Swiss Parchment Cream & Deep Wine) */
+.project-detail-overlay.theme-editorial {
+  --detail-bg: #EDE9E3;      /* Warm Parchment Cream */
+  --detail-text: #1d1616;      /* Deep Charcoal */
+  --detail-accent: #8E1616;    /* Editorial Wine Red */
+  --detail-line: #1d1616;
+  --detail-shadow: #8E1616;
+  --detail-card-bg: #ffffff;   /* Clean White cards */
+  --detail-text-muted: #4e4444;
+  --detail-text-dim: #7e7474;
+  --detail-pane-border: rgba(29, 22, 22, 0.12);
+}
+
+/* Theme 3: Matrix Edition (Cyber Terminal Black & Radioactive Green) */
+.project-detail-overlay.theme-matrix {
+  --detail-bg: #050505;      /* Absolute Terminal Black */
+  --detail-text: #00FF66;      /* Cyber Green */
+  --detail-accent: #00FF66;    /* Radioactive Green */
+  --detail-line: #00FF66;
+  --detail-shadow: #00FF66;
+  --detail-card-bg: #000000;
+  --detail-text-muted: rgba(0, 255, 102, 0.7);
+  --detail-text-dim: rgba(0, 255, 102, 0.4);
+  --detail-pane-border: rgba(0, 255, 102, 0.25);
+}
+
+/* ==========================================================================
+   DYNAMIC CSS OVERRIDES LINKED TO THEME CUSTOM PROPERTIES
+   ========================================================================== */
+
+.project-detail-overlay {
+  background-color: var(--detail-bg) !important;
+  color: var(--detail-text) !important;
+}
+
+.project-detail-scroll-container {
+  background-color: var(--detail-bg) !important;
+  color: var(--detail-text) !important;
+}
+
+/* Scrollbar theme track & thumb dynamic bounds */
+.project-detail-scroll-container::-webkit-scrollbar-track {
+  background: var(--detail-bg) !important;
+  border-left: 1.5px solid var(--detail-line) !important;
+}
+
+.project-detail-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--detail-line) !important;
+  border: 2.5px solid var(--detail-bg) !important;
+}
+
+/* TOP STATUS NAVIGATION BAR */
+.detail-top-nav {
+  background-color: var(--detail-bg) !important;
+  border-bottom: 1.5px solid var(--detail-line) !important;
+}
+
+.workspace-tag {
+  color: var(--detail-text) !important;
+}
+
+.status-indicator {
+  background-color: var(--detail-accent) !important;
+  box-shadow: 0 0 10px var(--detail-accent) !important;
+}
+
+/* INTERACTIVE BRUTALIST THEME SWITCH BUTTON */
+.detail-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--detail-bg) !important;
+  color: var(--detail-text) !important;
+  border: 1px solid var(--detail-line) !important;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+  box-shadow: 2px 2px 0px var(--detail-line) !important;
+  padding: 0;
+}
+
+.theme-btn-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.theme-btn-icon {
+  background-color: var(--detail-accent) !important;
+  color: #ffffff !important;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-theme-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px var(--detail-accent) !important;
+}
+
+/* CLOSE WORK BUTTON OVERRIDES */
+.detail-close-btn {
+  background: var(--detail-text) !important;
+  color: var(--detail-bg) !important;
+  border: 1px solid var(--detail-text) !important;
+  box-shadow: 2px 2px 0px var(--detail-line) !important;
+}
+
+.close-text {
+  color: var(--detail-bg) !important;
+}
+
+.close-icon-box {
+  background-color: var(--detail-accent) !important;
+  color: #ffffff !important;
+}
+
+.detail-close-btn:hover {
+  background-color: var(--detail-accent) !important;
+  border-color: var(--detail-accent) !important;
+  box-shadow: 4px 4px 0px var(--detail-line) !important;
+}
+
+.detail-close-btn:hover .close-text {
+  color: #ffffff !important;
+}
+
+/* HERO HEADER LOCKUPS */
+.detail-hero-section {
+  background-color: var(--detail-bg) !important;
+  border-bottom: 1.5px solid var(--detail-line) !important;
+  color: var(--detail-text) !important;
+}
+
+.hero-index-badge {
+  color: var(--detail-accent) !important;
+}
+
+.detail-main-title {
+  color: var(--detail-text) !important;
+}
+
+.title-serif-italic {
+  color: var(--detail-accent) !important;
+}
+
+.meta-col {
+  border-left: 1.5px solid var(--detail-line) !important;
+}
+
+.meta-label {
+  color: var(--detail-text-dim) !important;
+}
+
+.meta-value {
+  color: var(--detail-text) !important;
+}
+
+/* EDITING SUITE VIRTUAL CARD & VIEWPORTS */
+.timeline-monitor-section {
+  background-color: var(--detail-bg) !important;
+}
+
+.editing-suite-card {
+  background-color: var(--detail-card-bg) !important;
+  border: 2px solid var(--detail-line) !important;
+  box-shadow: 8px 8px 0px var(--detail-shadow) !important;
+}
+
+.source-monitor {
+  background-color: #000000 !important;
+  border-bottom: 2px solid var(--detail-line) !important;
+}
+
+.viewport-controls-bar {
+  background-color: var(--detail-card-bg) !important;
+  border-top: 1.5px solid var(--detail-line) !important;
+}
+
+.viewport-btn {
+  background-color: var(--detail-bg) !important;
+  border: 1px solid var(--detail-line) !important;
+  color: var(--detail-text) !important;
+}
+
+.viewport-btn:hover {
+  background-color: var(--detail-accent) !important;
+  color: #ffffff !important;
+  border-color: var(--detail-accent) !important;
+}
+
+.viewport-btn.control-play {
+  background-color: var(--detail-accent) !important;
+  border-color: var(--detail-accent) !important;
+}
+
+.db-meter-track {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.db-meter-fill {
+  background-color: var(--detail-accent) !important;
+}
+
+/* TIMELINE TRACKS AREA */
+.timeline-tracks-editor {
+  background-color: var(--detail-card-bg) !important;
+  border-top: 1.5px solid var(--detail-line) !important;
+}
+
+.timeline-tracks-header {
+  border-bottom: 1.5px solid var(--detail-pane-border) !important;
+}
+
+.lane-label {
+  color: var(--detail-text-muted) !important;
+  border-right: 1.5px solid var(--detail-pane-border) !important;
+}
+
+.lane-track-content {
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  box-shadow: inset 1px 1px 6px rgba(0,0,0,0.8) !important;
+}
+
+/* OUTLINED EDIT CHIPS */
+.lane-clip-block {
+  border: 1.5px solid var(--detail-line) !important;
+  background-color: var(--detail-bg) !important;
+  color: var(--detail-text) !important;
+}
+
+.lane-clip-block.clip-v2 {
+  background-color: var(--detail-accent) !important;
+  border-color: var(--detail-line) !important;
+  color: #ffffff !important;
+}
+
+.timeline-playhead {
+  background-color: var(--detail-accent) !important;
+}
+
+.playhead-pointer {
+  background-color: var(--detail-accent) !important;
+}
+
+.playhead-line {
+  background-color: var(--detail-accent) !important;
+  box-shadow: 0 0 10px var(--detail-accent) !important;
+}
+
+/* EDITORIAL BRIEF */
+.case-brief-section {
+  background-color: var(--detail-bg) !important;
+  border-top: 1.5px solid var(--detail-line) !important;
+  color: var(--detail-text) !important;
+}
+
+.editorial-mini-tag {
+  color: var(--detail-accent) !important;
+}
+
+.brief-tagline {
+  color: var(--detail-text) !important;
+}
+
+.brief-paragraph {
+  color: var(--detail-text-muted) !important;
+}
+
+.process-stage-node {
+  border-bottom: 1.5px solid var(--detail-pane-border) !important;
+}
+
+.stage-num {
+  color: var(--detail-accent) !important;
+}
+
+.stage-title {
+  color: var(--detail-text) !important;
+}
+
+.stage-description {
+  color: var(--detail-text-muted) !important;
+}
+
+/* TECHNICAL SPEC CARDS & DIARIES */
+.brutal-case-card {
+  background-color: var(--detail-card-bg) !important;
+  border: 1.5px solid var(--detail-line) !important;
+  box-shadow: 4px 4px 0px var(--detail-shadow) !important;
+}
+
+.brutal-case-card .card-header {
+  color: var(--detail-text) !important;
+  border-bottom: 1.5px solid var(--detail-line) !important;
+}
+
+.card-header-icon {
+  color: var(--detail-accent) !important;
+}
+
+.stat-brutal-item {
+  border-bottom: 1px dashed var(--detail-pane-border) !important;
+}
+
+.stat-item-label {
+  color: var(--detail-text-dim) !important;
+}
+
+.stat-item-value {
+  color: var(--detail-text) !important;
+}
+
+.editor-notes-card {
+  background-color: var(--detail-card-bg) !important;
+}
+
+.editor-diary-paragraph {
+  color: var(--detail-text-muted) !important;
+}
+
+.editor-signature-log {
+  border-top: 1px dashed var(--detail-pane-border) !important;
+}
+
+.log-stamp {
+  color: var(--detail-text-dim) !important;
+}
+
+.signature-name {
+  color: var(--detail-accent) !important;
+}
+
+/* PAGINATION FOOTER SLIDER */
+.detail-bottom-pagination {
+  background-color: var(--detail-bg) !important;
+  border-top: 1.5px solid var(--detail-line) !important;
+}
+
+.pag-btn.prev-exit {
+  color: var(--detail-text-muted) !important;
+  border-right: 1.5px solid var(--detail-line) !important;
+}
+
+.pag-btn.next-project {
+  color: var(--detail-text) !important;
+}
+
+.pag-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Override hover effect under dark themes */
+.project-detail-overlay.theme-neon .pag-btn:hover,
+.project-detail-overlay.theme-matrix .pag-btn:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.pag-btn.next-project:hover {
+  background-color: var(--detail-accent) !important;
+  color: #ffffff !important;
+}
