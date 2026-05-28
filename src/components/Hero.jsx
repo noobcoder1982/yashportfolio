@@ -102,8 +102,10 @@ export default function Hero() {
             <span className="sub-design">PRODUCTION</span>
           </div>
 
-          {/* Typographic Lockup: EDIT[moon]R */}
+          {/* Typographic Lockup: Yar Edit[moon]R Yash */}
           <div className="canvas-title-wrapper">
+            <span className="hero-yar-text">Yar</span>
+            
             <span className="title-part">Edit</span>
             
             {/* Glowing Moon Photo Visual */}
@@ -118,10 +120,7 @@ export default function Hero() {
 
             <span className="title-part title-lio">R</span>
 
-            {/* Neon Green Cursive Signature Yar Yash - Perfectly centered */}
-            <div className="cursive-signature-overlay">
-              Yar Yash
-            </div>
+            <span className="hero-yash-text">Yash</span>
           </div>
 
           {/* Viewfinder metadata overlay */}
