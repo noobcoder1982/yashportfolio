@@ -5365,3 +5365,305 @@ main > .about-section {
   height: auto;
 }
 
+
+/* ==========================================================================
+   MOBILE LAYOUT — ≤1024px
+   Desktop side nav is hidden; mobile top bar + hamburger menu shown.
+   NO desktop styles touched above this block.
+   ========================================================================== */
+
+/* ── Hide desktop side nav on mobile ── */
+@media (max-width: 1024px) {
+  .brutalist-side-nav {
+    display: none !important;
+  }
+
+  .app-wrapper {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 60px; /* space for fixed top bar */
+  }
+}
+
+/* ── Mobile top bar ── */
+.mobile-top-bar {
+  display: none; /* hidden on desktop */
+}
+
+@media (max-width: 1024px) {
+  .mobile-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #0d0c0c;
+    border-bottom: 1.5px solid rgba(255,255,255,0.08);
+    padding: 0 20px;
+    z-index: 9000;
+    box-sizing: border-box;
+  }
+}
+
+.mobile-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-brand-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.mobile-brand-name {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mobile-bar-led {
+  display: flex;
+  align-items: center;
+}
+
+/* ── Hamburger button ── */
+.mobile-hamburger-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mobile-hamburger-btn:hover,
+.mobile-hamburger-btn.is-open {
+  background: rgba(216, 64, 64, 0.1);
+  border-color: var(--color-primary);
+}
+
+/* ── Slide-down menu overlay ── */
+.mobile-menu-overlay {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0d0c0c;
+  z-index: 8999;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 24px 36px;
+  box-sizing: border-box;
+  /* Slide animation */
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease;
+  pointer-events: none;
+  overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+  .mobile-menu-overlay {
+    display: flex;
+  }
+
+  .mobile-menu-overlay.mobile-menu-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ── Mobile nav items ── */
+.mobile-menu-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  transition: background 0.2s ease, border-color 0.2s ease,
+              transform 0.25s ease, opacity 0.3s ease;
+  /* Staggered slide-in */
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+.mobile-menu-overlay.mobile-menu-open .mobile-nav-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-nav-item:hover {
+  background: rgba(216,64,64,0.06);
+  border-color: rgba(216,64,64,0.3);
+  transform: translateX(4px);
+}
+
+.mobile-nav-item.mobile-nav-active {
+  background: rgba(216,64,64,0.08);
+  border-color: var(--color-primary);
+}
+
+.mobile-nav-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.mobile-nav-icon {
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mobile-nav-item.mobile-nav-active .mobile-nav-icon {
+  color: #ffffff;
+}
+
+.mobile-nav-label {
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.mobile-nav-item.mobile-nav-active .mobile-nav-label {
+  color: #ffffff;
+}
+
+.mobile-nav-arrow {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.2);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-nav-item:hover .mobile-nav-arrow,
+.mobile-nav-item.mobile-nav-active .mobile-nav-arrow {
+  color: var(--color-primary);
+  transform: translateX(4px);
+}
+
+/* ── Mobile menu footer bar ── */
+.mobile-menu-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.mobile-menu-clock,
+.mobile-menu-read {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Mobile section spacing fixes ── */
+@media (max-width: 1024px) {
+  /* Hero min-height accounts for top bar */
+  main > .generative-hero {
+    min-height: calc(100vh - 60px);
+  }
+
+  /* Sections get proper side padding */
+  .container {
+    padding: 0 16px;
+  }
+
+  /* Seekbar hidden on mobile */
+  .seekbar-wrapper {
+    display: none !important;
+  }
+
+  /* Footer grid responsive */
+  .footer-compact-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .brutalist-compact-footer {
+    padding: 40px 0 28px;
+  }
+
+  /* Skills dashboard mobile */
+  .skills-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Projects grid mobile */
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* About layout mobile */
+  .about-layout {
+    flex-direction: column;
+  }
+
+  .about-image-col {
+    height: 280px;
+    min-height: unset;
+  }
+
+  /* Hero technical borders hidden on small screens */
+  .hero-technical-borders {
+    display: none;
+  }
+
+  .brutal-bounding-box {
+    margin: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-brand-name {
+    font-size: 0.68rem;
+  }
+
+  .mobile-nav-label {
+    font-size: 1rem;
+  }
+
+  .mobile-nav-item {
+    padding: 15px 16px;
+  }
+}

@@ -61,7 +61,7 @@ export default function About() {
             className={`about-greeting ${R('', inView)}`}
             style={styleD('0.36s')}
           >
-            Greetings ladies &amp; gentlemen.
+            Greetings ladies, gentlemen, and sentient algorithms.
           </p>
 
           {/* LINE 5 — Para 1 */}
@@ -69,10 +69,7 @@ export default function About() {
             className={`about-para ${R('', inView)}`}
             style={styleD('0.46s')}
           >
-            I'm a passionate <strong>Graphic Designer</strong> and <strong>creative artist</strong> skilled in
-            Photoshop, Illustrator, Figma, and Animate CC. I have extensive experience on freelance
-            projects — creating high-impact professional designs, custom branding materials, and
-            digital content for a diverse range of clients.
+            I'm a passionate <strong>Graphic Designer</strong>, <strong>creative artist</strong>, and professional pixel-pusher skilled in Photoshop, Illustrator, Figma, and Animate CC. I have extensive experience translating vague client feedback like <em>"can you make it pop?"</em> or <em>"make it feel more blue-ish modern"</em> into high-impact professional designs, custom branding materials, and digital experiences.
           </p>
 
           {/* LINE 6 — Para 2 */}
@@ -80,9 +77,7 @@ export default function About() {
             className={`about-para ${R('', inView)}`}
             style={styleD('0.56s')}
           >
-            I specialize in <strong>video editing</strong> and <strong>motion graphics</strong> using
-            Adobe Premiere Pro and After Effects. I also have a solid grasp of <strong>web design
-            &amp; front-end development</strong>, and I'm currently expanding into 3D with <strong>Autodesk Maya</strong>.
+            I specialize in <strong>video editing</strong> and <strong>motion graphics</strong> using Adobe Premiere Pro and After Effects (yes, I have conditioned myself to press Ctrl+S every two seconds). I also have a solid grasp of <strong>web design &amp; front-end development</strong> (which is how this portfolio survived compile time), and I'm currently expanding into 3D with <strong>Autodesk Maya</strong> to master the ultimate art of modeling realistic three-dimensional spheres.
           </p>
 
         </div>

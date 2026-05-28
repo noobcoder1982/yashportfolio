@@ -77,7 +77,7 @@ export default function Footer() {
             </p>
             <div className="footer-availability-badge">
               <span className="avail-pulse-dot"></span>
-              <span className="avail-txt">READY FOR FREELANCE &amp; STUDIO GIGS</span>
+              <span className="avail-txt">READY FOR GIGS (OR UNTIL PREMIERE PRO CRASHES)</span>
             </div>
           </div>
 

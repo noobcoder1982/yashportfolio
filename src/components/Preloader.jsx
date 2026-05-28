@@ -34,13 +34,13 @@ export default function Preloader({ onComplete }) {
 
   // Log message helper depending on export progress
   const getRenderLog = (p) => {
-    if (p < 15) return `[SYS] Booting high-fidelity engines...`;
-    if (p < 30) return `[ASSETS] Importing yash_sketch.png...`;
-    if (p < 45) return `[SHADERS] Calibrating Swiss editorial styles...`;
-    if (p < 60) return `[NAV] Syncing scroll SMPTE timecode (24fps)...`;
-    if (p < 75) return `[MIXER] Linking dynamic L/R visualizer...`;
-    if (p < 90) return `[LAYOUT] Building 100vh viewport layers...`;
-    if (p < 100) return `[RENDER] Final frame pass & audio mixdown...`;
+    if (p < 15) return `[SYS] Booting high-fidelity coffee engines...`;
+    if (p < 30) return `[ASSETS] Importing yash_sketch.png (and extra caffeine)...`;
+    if (p < 45) return `[ADOBE] Auto-saving every 1.5 seconds to prevent panic...`;
+    if (p < 60) return `[NAV] Syncing timeline frame rates to match heart rate...`;
+    if (p < 75) return `[MIXER] Overclocking bass to annoy the neighbors...`;
+    if (p < 90) return `[RENDER] Sweating over the final export pass...`;
+    if (p < 100) return `[SYS] Sweeping leftover pixel dust from screen...`;
     return `[COMPLETED] Ready to launch Yar Yash Portfolio.`;
   };
 
