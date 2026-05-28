@@ -26,7 +26,7 @@ export default function App() {
 
   const handlePreloaderExit = () => {
     setPhase('exiting');
-    setTimeout(() => setPhase('done'), 700);
+    setTimeout(() => setPhase('done'), 1400);
   };
 
   return (
@@ -35,7 +35,7 @@ export default function App() {
 
       <SeekBar />
 
-      <div className={`app-wrapper ${phase !== 'loading' ? 'fade-in-ready' : ''}`}>
+      <div className={`app-wrapper ${phase !== 'loading' ? 'fade-in-ready' : ''} ${phase === 'done' ? 'content-visible' : ''}`}>
         <Header />
         <main>
           <Hero />

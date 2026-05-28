@@ -1,224 +1,342 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+const TIMELINE_CLIPS = {
+  V1: [
+    { label: 'PORTFOLIO_CORE.mp4', color: '#4f8ef7', width: '38%', left: '0%' },
+    { label: 'REEL_2024.mp4',      color: '#3d6fcc', width: '25%', left: '40%' },
+    { label: 'FINAL_GRADE.mp4',    color: '#4f8ef7', width: '28%', left: '68%' },
+  ],
+  A1: [
+    { label: 'LAV',  color: '#2ea44f', width: '60%', left: '0%' },
+    { label: 'LAV',  color: '#2ea44f', width: '35%', left: '63%' },
+  ],
+  A2: [
+    { label: 'SFX',  color: '#2ea44f', width: '45%', left: '10%' },
+    { label: 'SFX',  color: '#22833e', width: '40%', left: '57%' },
+  ],
+  A3: [
+    { label: 'AMBIENCE', color: '#9333ea', width: '95%', left: '2%' },
+  ],
+  A4: [
+    { label: 'MUSIC', color: '#b845c5', width: '100%', left: '0%' },
+  ],
+};
+
+const TIMECODES = ['00:00:00', '00:02:00', '00:04:00', '00:06:00', '00:08:00', '00:10:00', '00:12:00'];
+
+const FILES = [
+  { name: '001 SEQUENCES', indent: 0, isFolder: true },
+  { name: '002 MEDIA', indent: 0, isFolder: true },
+  { name: 'ARCHIVAL', indent: 1, isFolder: true },
+  { name: 'B-ROLL', indent: 1, isFolder: true },
+  { name: 'A_CAM', indent: 2, isFolder: true },
+  { name: 'PORTFOLIO_CORE.mp4', indent: 3, isFolder: false },
+  { name: 'REEL_2024.mp4', indent: 3, isFolder: false },
+  { name: 'FINAL_GRADE.mp4', indent: 3, isFolder: false },
+  { name: 'INTERVIEWS', indent: 1, isFolder: true },
+  { name: '003 GFX', indent: 0, isFolder: true },
+  { name: '004 AUDIO', indent: 0, isFolder: true },
+  { name: 'Creative_Reel_Score.wav', indent: 1, isFolder: false },
+];
 
 export default function Preloader({ onComplete }) {
   const [progress, setProgress] = useState(0);
-  const [isExiting, setIsExiting] = useState(false);
+  const [phase, setPhase] = useState('loading'); // 'loading' | 'exiting'
+  const currentFrame = Math.floor((progress / 100) * 240);
+  const tc = `00:00:${String(Math.floor((progress / 100) * 59)).padStart(2,'0')}:${String(Math.floor((progress / 100) * 23)).padStart(2,'0')}`;
 
   useEffect(() => {
     let current = 0;
     const interval = setInterval(() => {
-      const increment = Math.floor(Math.random() * 5) + 3;
-      current = Math.min(current + increment, 100);
+      const inc = Math.floor(Math.random() * 4) + 2;
+      current = Math.min(current + inc, 100);
       setProgress(current);
-
       if (current === 100) {
         clearInterval(interval);
         setTimeout(() => {
-          setIsExiting(true);
-          // Fire onComplete the moment the slide-up STARTS
-          // so page content begins fading in simultaneously → no white flash
+          setPhase('exiting');
           if (onComplete) onComplete();
-        }, 600);
+        }, 500);
       }
-    }, 50);
-
+    }, 55);
     return () => clearInterval(interval);
   }, [onComplete]);
 
-  // Derive frame count (240 frame export)
-  const currentFrame = Math.floor((progress / 100) * 240);
-  
-  // Derive estimated remaining time (3 seconds countdown)
-  const secondsRemaining = Math.max(0, 3 - Math.floor((progress / 100) * 3));
-  const timeRemainingStr = `00:00:0${secondsRemaining}`;
-
-  const stages = [
-    { threshold: 15, label: "Booting high-fidelity engines..." },
-    { threshold: 38, label: "Importing asset & narrative reels..." },
-    { threshold: 60, label: "Syncing sequence timeline FPS..." },
-    { threshold: 82, label: "Mixing narrative dynamic audio..." },
-    { threshold: 98, label: "Compiling final portfolio assembly..." }
-  ];
-
   return (
-    <div className={`preloader-overlay ${isExiting ? 'exit-curtain-open' : ''}`}>
-      
-      {/* Curtain Panels */}
-      <div className="preloader-curtain curtain-left"></div>
-      <div className="preloader-curtain curtain-right"></div>
-      
-      {/* Adobe Premiere Pro style Export Panel Window */}
-      <div className="premiere-export-card">
-        
-        {/* Title Bar */}
-        <div className="premiere-card-header">
-          <div className="premiere-logo-area">
-            <div className="pr-logo-badge">Pr</div>
-            <span className="premiere-title-text">Adobe Premiere Pro Export</span>
+    <div className={`pl-root ${phase === 'exiting' ? 'pl-exiting' : ''}`}>
+
+      {/* ═══════════════ TOP HALF — everything above the timeline ═══════════════ */}
+      <div className="pl-top-half">
+
+        {/* ── App chrome title bar ── */}
+        <div className="pl-titlebar">
+          <div className="pl-titlebar-left">
+            <div className="pl-pr-badge">Pr</div>
+            <span>Adobe Premiere Pro — <em>YASH_PORTFOLIO_v24.prproj</em></span>
           </div>
-          <div className="premiere-window-dots">
-            <span className="win-dot"></span>
-            <span className="win-dot"></span>
-            <span className="win-dot"></span>
+          <div className="pl-titlebar-controls">
+            <span className="pl-win-btn pl-minimize"></span>
+            <span className="pl-win-btn pl-maximize"></span>
+            <span className="pl-win-btn pl-close"></span>
           </div>
         </div>
 
-        {/* Panel Window Content */}
-        <div className="premiere-card-body">
+        {/* ── Menu bar ── */}
+        <div className="pl-menubar">
+          {['File','Edit','Clip','Sequence','Markers','Graphics','View','Window','Help'].map(m => (
+            <span key={m} className="pl-menu-item">{m}</span>
+          ))}
+        </div>
 
-          {/* REAL-TIME VIEWINDER / RENDER PREVIEW DISPLAY */}
-          <div className="premiere-viewfinder">
-            <div className="viewfinder-corner top-left"></div>
-            <div className="viewfinder-corner top-right"></div>
-            <div className="viewfinder-corner bottom-left"></div>
-            <div className="viewfinder-corner bottom-right"></div>
+        {/* ── Three-panel workspace ── */}
+        <div className="pl-workspace">
 
-            <div className="viewfinder-stats-top">
-              <div className="stats-rec-indicator">
-                <span className="rec-dot pulsing"></span>
-                <span className="rec-text">RENDER</span>
+          {/* LEFT — Project browser */}
+          <div className="pl-panel pl-panel-left">
+            <div className="pl-panel-header">
+              <span className="pl-panel-title">Project: YASH_PORTFOLIO</span>
+              <div className="pl-panel-tabs">
+                <span className="pl-ptab pl-ptab-active">Project</span>
+                <span className="pl-ptab">Libraries</span>
               </div>
-              <span className="stats-aspect-ratio">16:9 REC</span>
+            </div>
+            <div className="pl-file-search">
+              <span className="pl-search-icon">🔍</span>
+              <span className="pl-search-placeholder">Search...</span>
+            </div>
+            <div className="pl-file-list">
+              <div className="pl-file-cols">
+                <span>Name</span><span>Duration</span>
+              </div>
+              {FILES.map((f, i) => (
+                <div
+                  key={i}
+                  className={`pl-file-row ${f.isFolder ? 'pl-folder' : 'pl-file'} ${i === 5 ? 'pl-file-active' : ''}`}
+                  style={{ paddingLeft: `${8 + f.indent * 14}px` }}
+                >
+                  <span className="pl-file-icon">{f.isFolder ? '▶' : '▪'}</span>
+                  <span className="pl-file-name">{f.name}</span>
+                  {!f.isFolder && <span className="pl-file-dur">00:01:00:00</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CENTER — Program monitor */}
+          <div className="pl-panel pl-panel-center">
+            <div className="pl-panel-header">
+              <span className="pl-panel-title">Program: YASH_REEL_v2 ▼</span>
             </div>
 
-            <div className="viewfinder-log-stream">
-              <div className="log-line-item completed">
-                <span className="bullet">✓</span>
-                <span className="log-text strikethrough-active">SYS: CALIBRATED (24.00fps)</span>
+            {/* Video preview */}
+            <div className="pl-monitor-screen">
+              {/* Scan-line CRT effect */}
+              <div className="pl-scanlines"></div>
+
+              {/* Cinematic frame corners */}
+              <div className="pl-corner pl-corner-tl"></div>
+              <div className="pl-corner pl-corner-tr"></div>
+              <div className="pl-corner pl-corner-bl"></div>
+              <div className="pl-corner pl-corner-br"></div>
+
+              {/* Preview content — logo + timecode */}
+              <div className="pl-preview-content">
+                <div className="pl-preview-brand">YASH</div>
+                <div className="pl-preview-sub">POST-PRODUCTION PORTFOLIO</div>
               </div>
-              {stages.map((stage, idx) => {
-                const isCompleted = progress > stage.threshold;
-                const isActive = progress >= (idx > 0 ? stages[idx - 1].threshold : 0) && progress <= stage.threshold;
-                
-                return (
-                  <div key={idx} className={`log-line-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}>
-                    <span className="bullet">{isCompleted ? '✓' : isActive ? '▶' : '○'}</span>
-                    <span className={`log-text ${isCompleted ? 'strikethrough-active' : ''}`}>
-                      {stage.label}
-                    </span>
+
+              {/* Timecode display */}
+              <div className="pl-monitor-tc-bar">
+                <span className="pl-tc-val">{tc}</span>
+                <span className="pl-tc-fit">Fit</span>
+                <span className="pl-tc-rest">1/2 &nbsp;⬙&nbsp; 00:01:00:00</span>
+              </div>
+
+              {/* Monitor scrub bar (reflects progress) */}
+              <div className="pl-monitor-scrub">
+                <div className="pl-monitor-scrub-fill" style={{ width: `${progress}%` }}></div>
+                <div className="pl-monitor-scrub-head" style={{ left: `${progress}%` }}></div>
+              </div>
+
+              {/* Transport controls */}
+              <div className="pl-transport">
+                {'⏮ ◀◀ ◀ ▶◀ ⏹ ▶ ▶◀ ▶▶ ⏭'.split(' ').map((ic, i) => (
+                  <button key={i} className={`pl-transport-btn ${i === 5 && progress < 100 ? 'pl-transport-active' : ''}`}>{ic}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Render status */}
+            <div className="pl-render-status">
+              <div className="pl-render-rec">
+                <span className="pl-rec-dot"></span>
+                <span>RENDERING</span>
+              </div>
+              <span className="pl-render-pct">{progress}%</span>
+              <span className="pl-render-frames">Frame {currentFrame} / 240</span>
+            </div>
+          </div>
+
+          {/* RIGHT — Lumetri / Essential Sound panel */}
+          <div className="pl-panel pl-panel-right">
+            <div className="pl-panel-header">
+              <div className="pl-panel-tabs">
+                <span className="pl-ptab">Lumetri Color</span>
+                <span className="pl-ptab pl-ptab-active">Essential Sound</span>
+                <span className="pl-ptab">Text</span>
+              </div>
+            </div>
+            <div className="pl-esound-body">
+              <div className="pl-esound-label">Preset: (Custom)</div>
+              <div className="pl-esound-section">
+                <div className="pl-esound-section-title">✔ Enhance Speech</div>
+                <button className="pl-enhance-btn">Enhance</button>
+                <div className="pl-esound-row">
+                  <span>Mix Amount</span>
+                  <div className="pl-slider-track">
+                    <div className="pl-slider-fill" style={{ width: `${progress * 0.7}%` }}></div>
+                    <div className="pl-slider-thumb" style={{ left: `${progress * 0.7}%` }}></div>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Dynamic pixel matrices that light up as we render */}
-            <div className="viewfinder-grid-visual">
-              {Array.from({ length: 14 }).map((_, idx) => {
-                const active = progress >= (idx / 14) * 100;
-                return (
-                  <div key={idx} className={`grid-block ${active ? 'active' : ''}`} />
-                );
-              })}
-            </div>
-
-            <div className="viewfinder-stats-bottom">
-              <span className="stats-fps">LUT: CINEMATIC_V2</span>
-              <span className="stats-frame">FR: {currentFrame} / 240</span>
-            </div>
-          </div>
-          
-          {/* Metadata Grid */}
-          <div className="premiere-meta-grid">
-            <div className="meta-row">
-              <span className="meta-label">Format:</span>
-              <span className="meta-val">H.264 (MP4)</span>
-            </div>
-            <div className="meta-row">
-              <span className="meta-label">Preset:</span>
-              <span className="meta-val">Match Source - High Bitrate</span>
-            </div>
-            <div className="meta-row">
-              <span className="meta-label">Output Path:</span>
-              <span className="meta-val">/Users/Yash/Portfolio_Final.mp4</span>
-            </div>
-            <div className="meta-row">
-              <span className="meta-label">Range:</span>
-              <span className="meta-val">Entire Sequence (00:00:10:00)</span>
-            </div>
-          </div>
-
-          {/* Timeline Playhead Track Mockup */}
-          <div className="premiere-mini-timeline">
-            
-            {/* Timeline Ruler Header */}
-            <div className="timeline-ruler">
-              <span>00:00:00</span>
-              <span>00:02:15</span>
-              <span>00:05:00</span>
-              <span>00:07:15</span>
-              <span>00:10:00</span>
-            </div>
-
-            {/* Track Layers Container */}
-            <div className="timeline-tracks-container">
-              
-              {/* Blue Playhead Sweep Line */}
-              <div 
-                className="premiere-playhead-line"
-                style={{ left: `${progress}%` }}
-              >
-                <div className="playhead-marker-top"></div>
-              </div>
-
-              {/* V2 Track Layer */}
-              <div className="timeline-track-row v2-row">
-                <span className="track-label">V2</span>
-                <div className="track-segment-block active-text-track">
-                  <span>[TEXT] Herr Von Muellerhoff</span>
+                  <span className="pl-slider-val">7.0</span>
                 </div>
               </div>
-
-              {/* V1 Track Layer */}
-              <div className="timeline-track-row v1-row">
-                <span className="track-label">V1</span>
-                <div className="track-segment-block active-video-track">
-                  <span>[VIDEO] YASH_PORTFOLIO_CORE.mp4</span>
+              <div className="pl-esound-section">
+                <div className="pl-esound-section-title">✔ Loudness</div>
+                <div className="pl-esound-row pl-muted">
+                  <span>Clip Volume</span>
+                </div>
+                <div className="pl-esound-row">
+                  <span>Level</span>
+                  <div className="pl-slider-track">
+                    <div className="pl-slider-fill pl-slider-blue" style={{ width: `${40 + progress * 0.3}%` }}></div>
+                    <div className="pl-slider-thumb" style={{ left: `${40 + progress * 0.3}%` }}></div>
+                  </div>
+                  <span className="pl-slider-val pl-blue">0.0 dB</span>
                 </div>
               </div>
-
-              {/* A1 Track Layer */}
-              <div className="timeline-track-row a1-row">
-                <span className="track-label">A1</span>
-                <div className="track-segment-block active-audio-track">
-                  <span>[AUDIO] Creative_Reel_Score.wav</span>
+              <div className="pl-esound-section">
+                <div className="pl-esound-section-title">Lumetri Scopes</div>
+                <div className="pl-waveform-mini">
+                  {Array.from({ length: 24 }).map((_, i) => (
+                    <div key={i} className="pl-wf-bar" style={{ height: `${20 + Math.sin(i * 0.8 + progress * 0.05) * 15}px` }}></div>
+                  ))}
                 </div>
               </div>
-
             </div>
           </div>
-
-          {/* Export Status Line */}
-          <div className="premiere-status-label">
-            <span className="status-main-txt">
-              {progress < 100 ? `Encoding Sequence: Frame ${currentFrame} of 240` : 'Export Completed Successfully'}
-            </span>
-            <span className="status-percent-txt">{progress}%</span>
-          </div>
-
-          {/* Premiere Pro Style Progress Bar */}
-          <div className="premiere-progress-track">
-            <div 
-              className="premiere-progress-bar"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-
-          {/* Bottom Estimated Time Counters */}
-          <div className="premiere-bottom-counters">
-            <div className="counter-item">
-              <span className="counter-lbl">Time Remaining:</span>
-              <span className="counter-val">{timeRemainingStr}</span>
-            </div>
-            <div className="counter-item">
-              <span className="counter-lbl">Elapsed Time:</span>
-              <span className="counter-val">00:00:0{Math.min(2, Math.floor((progress / 100) * 2.5))}</span>
-            </div>
-          </div>
-
         </div>
-
       </div>
 
+      {/* ═══════════ THE CURTAIN SPLIT SEAM (timeline divider) ═══════════ */}
+      <div className="pl-seam">
+        <div className="pl-seam-label">Ad_RoughCut-V1 ×</div>
+        <div className="pl-seam-tools">
+          <span>🖊</span><span>✂</span><span>↔</span><span>↕</span><span>✋</span>
+        </div>
+      </div>
+
+      {/* ═══════════════ BOTTOM HALF — Timeline ═══════════════ */}
+      <div className="pl-bottom-half">
+
+        {/* Timeline header bar */}
+        <div className="pl-tl-header">
+          <div className="pl-tl-tc-display">{tc}</div>
+          <div className="pl-tl-ruler">
+            {TIMECODES.map((t, i) => (
+              <span key={i} className="pl-tl-ruler-tick">{t}</span>
+            ))}
+          </div>
+          {/* VU meter */}
+          <div className="pl-vu-meter">
+            {Array.from({length: 20}).map((_, i) => (
+              <div key={i} className={`pl-vu-bar ${i < Math.floor(progress / 5) ? (i > 16 ? 'pl-vu-red' : i > 12 ? 'pl-vu-yellow' : 'pl-vu-green') : ''}`}></div>
+            ))}
+          </div>
+        </div>
+
+        {/* Timeline tracks area */}
+        <div className="pl-tl-body">
+          {/* Track controls (left gutter) */}
+          <div className="pl-tl-gutter">
+            {['V1','A1','A2','A3','A4'].map((t, i) => (
+              <div key={t} className={`pl-tl-track-ctrl ${t.startsWith('V') ? 'pl-tl-video' : 'pl-tl-audio'}`}>
+                <span className="pl-track-name">{t}</span>
+                <div className="pl-track-btns">
+                  <span className="pl-tbtn">M</span>
+                  <span className="pl-tbtn">H</span>
+                  <span className="pl-tbtn">S</span>
+                  {t.startsWith('A') && <span className="pl-tbtn pl-mic">🎙</span>}
+                </div>
+                {t.startsWith('V') && <span className="pl-track-sub">Video {i + 1}</span>}
+                {t.startsWith('A') && <span className="pl-track-sub">{['LAV','SFX','AMBIENCE','MUSIC'][i-1]}</span>}
+              </div>
+            ))}
+          </div>
+
+          {/* Track lanes */}
+          <div className="pl-tl-lanes">
+            {/* Playhead */}
+            <div className="pl-playhead" style={{ left: `${progress}%` }}>
+              <div className="pl-playhead-head"></div>
+              <div className="pl-playhead-line"></div>
+            </div>
+
+            {/* Progress "played" tint */}
+            <div className="pl-tl-played" style={{ width: `${progress}%` }}></div>
+
+            {/* Clip tracks */}
+            {Object.entries(TIMELINE_CLIPS).map(([trackName, clips]) => (
+              <div key={trackName} className={`pl-tl-lane ${trackName.startsWith('V') ? 'pl-lane-video' : 'pl-lane-audio'}`}>
+                {clips.map((clip, i) => (
+                  <div
+                    key={i}
+                    className="pl-clip"
+                    style={{
+                      left: clip.left,
+                      width: clip.width,
+                      backgroundColor: clip.color,
+                    }}
+                  >
+                    <div className="pl-clip-label">{clip.label}</div>
+                    {trackName.startsWith('A') && (
+                      <div className="pl-clip-waveform">
+                        {Array.from({ length: 40 }).map((_, wi) => (
+                          <div
+                            key={wi}
+                            className="pl-wf-spike"
+                            style={{ height: `${8 + Math.abs(Math.sin(wi * 0.4)) * 14}px` }}
+                          ></div>
+                        ))}
+                      </div>
+                    )}
+                    {trackName === 'V1' && (
+                      <div className="pl-clip-thumbnails">
+                        {Array.from({ length: 4 }).map((_, ti) => (
+                          <div key={ti} className="pl-clip-thumb"></div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Timeline footer — the export progress bar */}
+        <div className="pl-tl-footer">
+          <div className="pl-export-row">
+            <span className="pl-export-lbl">
+              {progress < 100 ? `Encoding: Frame ${currentFrame} of 240` : '✓ Export Complete — Launching Portfolio...'}
+            </span>
+            <span className="pl-export-pct">{progress}%</span>
+          </div>
+          <div className="pl-export-track">
+            <div className="pl-export-fill" style={{ width: `${progress}%` }}></div>
+            <div className="pl-export-glow" style={{ left: `${progress}%` }}></div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
