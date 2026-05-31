@@ -24,10 +24,10 @@ export default function App() {
     }
   }, []);
 
-  const handlePreloaderExit = () => {
+  const handlePreloaderExit = React.useCallback(() => {
     setPhase('exiting');
     setTimeout(() => setPhase('done'), 1400);
-  };
+  }, []);
 
   return (
     <>

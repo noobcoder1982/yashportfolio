@@ -70,47 +70,47 @@ export default function Contact() {
           </p>
         </div>
 
-        <div className="contact-layout">
+        {/* Bento Grid Layout */}
+        <div className="contact-bento-grid">
 
-          {/* Left: Big Status Card */}
-          <div className="contact-left-panel">
-            <div className="contact-status-card">
-              <div className="contact-status-header">
-                <span className="contact-status-tag">CURRENT STATUS</span>
+          {/* Card 1: Status & Availability (Spans 2 rows on desktop) */}
+          <div className="bento-card bento-status-card">
+            <div className="bento-card-header">
+              <span className="bento-card-tag">[ ACTIVE STATUS ]</span>
+            </div>
+            <div className="bento-card-body status-body-layout">
+              <div className="contact-availability-badge">
+                <span className="pulse-dot"></span>
+                <span>Accepting Projects — Q2/Q3 2026</span>
               </div>
-              <div className="contact-status-body">
-                <div className="contact-availability-badge">
-                  <span className="pulse-dot"></span>
-                  <span>Accepting Projects — Q2/Q3 2026</span>
-                </div>
 
-                <h3 className="contact-big-text">
-                  Bring your<br />
-                  <em>visual story</em><br />
-                  to life.
-                </h3>
+              <h3 className="contact-big-text">
+                Bring your <em>visual story</em> to life.
+              </h3>
 
+              <div className="status-meta-group">
                 <div className="contact-meta-row">
                   <MapPin size={13} />
                   <span>India — Remote Worldwide</span>
                 </div>
                 <div className="contact-meta-row">
                   <Clock size={13} />
-                  <span>Response Time: Within 24hrs</span>
+                  <span>Response Time: &lt; 24hrs</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Contact Channels */}
-          <div className="contact-right-panel">
-
-            {/* Email 1 */}
-            <div className="contact-channel-row">
+          {/* Card 2: Primary Email */}
+          <div className="bento-card bento-channel-card">
+            <div className="bento-card-header">
+              <span className="bento-card-tag">[ CORRESPONDENCE ]</span>
+            </div>
+            <div className="bento-card-body channel-body-layout">
               <div className="channel-icon-wrap">
                 <Mail size={16} />
               </div>
-              <div className="channel-content">
+              <div className="channel-info-wrap">
                 <span className="channel-type-label">Primary Email</span>
                 <a href={`mailto:${emailPrimary}`} className="channel-address">
                   {emailPrimary}
@@ -124,13 +124,18 @@ export default function Contact() {
                 {copiedEmail === emailPrimary ? <Check size={15} className="copied-ok" /> : <Copy size={15} />}
               </button>
             </div>
+          </div>
 
-            {/* Email 2 */}
-            <div className="contact-channel-row">
+          {/* Card 3: Alternate Email */}
+          <div className="bento-card bento-channel-card">
+            <div className="bento-card-header">
+              <span className="bento-card-tag">[ FAILSAFE DOCK ]</span>
+            </div>
+            <div className="bento-card-body channel-body-layout">
               <div className="channel-icon-wrap">
                 <Mail size={16} />
               </div>
-              <div className="channel-content">
+              <div className="channel-info-wrap">
                 <span className="channel-type-label">Alternate Email</span>
                 <a href={`mailto:${emailSecondary}`} className="channel-address">
                   {emailSecondary}
@@ -144,13 +149,18 @@ export default function Contact() {
                 {copiedEmail === emailSecondary ? <Check size={15} className="copied-ok" /> : <Copy size={15} />}
               </button>
             </div>
+          </div>
 
-            {/* Instagram */}
-            <div className="contact-channel-row">
+          {/* Card 4: Instagram */}
+          <div className="bento-card bento-channel-card ig-bento-card">
+            <div className="bento-card-header">
+              <span className="bento-card-tag">[ SOCIAL LINK ]</span>
+            </div>
+            <div className="bento-card-body channel-body-layout">
               <div className="channel-icon-wrap ig-icon">
                 <InstagramIcon />
               </div>
-              <div className="channel-content">
+              <div className="channel-info-wrap">
                 <span className="channel-type-label">Instagram</span>
                 <a
                   href="https://www.instagram.com/yar_yash25/"
@@ -171,38 +181,56 @@ export default function Contact() {
                 <ArrowUpRight size={15} />
               </a>
             </div>
+          </div>
 
-            {/* Discord Live Status Console Card */}
-            <div className="contact-discord-card">
-              <div className="discord-card-glow"></div>
-              
-              <div className="dcard-header">
-                <div className="dcard-status-dot pulsing-blurple"></div>
-                <span className="dcard-header-tag">[ LIVE TRANSMISSION SOCKET ]</span>
-                <DiscordIcon size={12} />
+          {/* Card 5: Services & Capabilities */}
+          <div className="bento-card bento-services-card">
+            <div className="bento-card-header">
+              <span className="bento-card-tag">[ CAPABILITIES ]</span>
+            </div>
+            <div className="bento-card-body services-body-layout">
+              <div className="contact-service-tags">
+                {[
+                  'Graphic Design', 'Brand Identity', 'UI/UX Design',
+                  'Video Editing', 'Motion Graphics', 'Social Media Design',
+                  'Photo Editing',
+                ].map((s) => (
+                  <span key={s} className="contact-service-pill">{s}</span>
+                ))}
               </div>
+            </div>
+          </div>
 
-              {discordLoading ? (
-                <div className="dcard-loading">
-                  <div className="dcard-loading-pulse"></div>
-                  <span>ESTABLISHING CORNER SIGNAL...</span>
-                </div>
-              ) : (
-                <div className="dcard-body">
-                  <div className="dcard-server-profile">
-                    {discordStats.iconUrl ? (
-                      <img src={discordStats.iconUrl} alt="Server icon" className="dcard-server-avatar" />
-                    ) : (
-                      <div className="dcard-server-avatar-fallback">
-                        <DiscordIcon size={20} />
-                      </div>
-                    )}
-                    <div className="dcard-server-info">
-                      <h4 className="dcard-server-name">{discordStats.name}</h4>
-                      <p className="dcard-server-desc">{discordStats.description}</p>
+          {/* Card 6: Discord Console (Spans all columns on desktop) */}
+          <div className="bento-card bento-discord-card">
+            <div className="bento-card-header">
+              <div className="dcard-status-dot pulsing-blurple"></div>
+              <span className="bento-card-tag">[ LIVE TRANSMISSION SOCKET ]</span>
+              <DiscordIcon size={12} />
+            </div>
+
+            {discordLoading ? (
+              <div className="dcard-loading">
+                <div className="dcard-loading-pulse"></div>
+                <span>ESTABLISHING CORNER SIGNAL...</span>
+              </div>
+            ) : (
+              <div className="bento-card-body discord-body-layout">
+                <div className="discord-left-info">
+                  {discordStats.iconUrl ? (
+                    <img src={discordStats.iconUrl} alt="Server icon" className="dcard-server-avatar" />
+                  ) : (
+                    <div className="dcard-server-avatar-fallback">
+                      <DiscordIcon size={18} />
                     </div>
+                  )}
+                  <div className="dcard-server-info">
+                    <h4 className="dcard-server-name">{discordStats.name}</h4>
+                    <p className="dcard-server-desc">{discordStats.description}</p>
                   </div>
+                </div>
 
+                <div className="discord-right-info">
                   <div className="dcard-stats-hud">
                     <div className="dcard-stat">
                       <span className="dcard-dot green-dot"></span>
@@ -214,7 +242,7 @@ export default function Contact() {
                     </div>
                   </div>
 
-                  <a 
+                  <a
                     href="https://discord.gg/bahjQrDjw"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -224,26 +252,10 @@ export default function Contact() {
                     <ArrowUpRight size={13} className="dcard-launch-icon" />
                   </a>
                 </div>
-              )}
-            </div>
-
-            {/* Divider line */}
-            <div className="contact-services-divider">
-              <span className="contact-services-tag">SERVICES OFFERED</span>
-            </div>
-
-            {/* Service Tags */}
-            <div className="contact-service-tags">
-              {[
-                'Graphic Design', 'Brand Identity', 'UI/UX Design',
-                'Video Editing', 'Motion Graphics', 'Social Media Design',
-                'Photo Editing', 'Freelance Consulting',
-              ].map((s) => (
-                <span key={s} className="contact-service-pill">{s}</span>
-              ))}
-            </div>
-
+              </div>
+            )}
           </div>
+
         </div>
 
       </div>

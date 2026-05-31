@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ArrowUpRight, Film, Sparkles } from 'lucide-react';
+import { ArrowRight, Film, Sparkles } from 'lucide-react';
 import ProjectDetailPage from './ProjectDetailPage';
 
 export default function Projects() {
@@ -10,7 +10,7 @@ export default function Projects() {
 
   const projectsData = [
     {
-      title: 'commercial brand identity',
+      title: 'BRAND IDENTITY',
       desc: 'High-pacing post-production sequence detailing corporate campaign summaries, incorporating sound-design beat alignment and motion graphic overrides.',
       tech: ['Premiere Pro', 'After Effects', 'Sound Design', 'Pacing'],
       category: 'commercial',
@@ -18,8 +18,9 @@ export default function Projects() {
       color: '#FF2E2E',
       role: 'Lead Post-Production Artist',
       client: 'Apex Global Corp',
+      year: '2025',
       timeline: '4 Weeks',
-      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview',
       coverImage: '/commercial_cover.png',
       details: {
         tagline: 'Crafting the Visual Signature of a High-Octane Brand.',
@@ -38,7 +39,7 @@ export default function Projects() {
       }
     },
     {
-      title: 'video edits and cinematic shorts',
+      title: 'VIDEO EDITS AND SHORTS',
       desc: 'Highly atmospheric color-graded editing sequence utilizing custom grain styling, SLOG3 logarithmic conversions, and multicam synchronization.',
       tech: ['DaVinci Resolve', 'Color Grading', 'Grain Matching', 'VFX'],
       category: 'narrative',
@@ -46,8 +47,9 @@ export default function Projects() {
       color: '#D84040',
       role: 'Cinematic Colorist & Editor',
       client: 'Vanguard Films',
+      year: '2024',
       timeline: '6 Weeks',
-      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview',
       coverImage: '/cinematic_cover.png',
       details: {
         tagline: 'Atmospheric storytelling crafted frame-by-frame.',
@@ -66,7 +68,7 @@ export default function Projects() {
       }
     },
     {
-      title: 'short documentary or script writing',
+      title: 'SHORT DOCUMENTARY OR SCRIPT WRITING',
       desc: 'Dialogue-driven storytelling showcasing editorial structuring, archival integration, clean noise-reduction mix, and audio leveling.',
       tech: ['Premiere Pro', 'Audio Cleanup', 'Archival Sync', 'Grading'],
       category: 'documentary',
@@ -74,8 +76,9 @@ export default function Projects() {
       color: '#1D1616',
       role: 'Script Writer & Narrative Editor',
       client: 'Independent Media Lab',
+      year: '2024',
       timeline: '8 Weeks',
-      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview',
       coverImage: '/documentary_cover.png',
       details: {
         tagline: 'Unearthing raw narratives through dialogue and structure.',
@@ -94,7 +97,7 @@ export default function Projects() {
       }
     },
     {
-      title: 'social contacts',
+      title: 'SOCIAL CONTACTS',
       desc: 'High-retention social cuts utilizing dynamic typography overlays, custom sound effects, zooming visual focus keys, and rapid pace editing.',
       tech: ['Premiere Pro', 'After Effects', 'Typography', 'Effects'],
       category: 'social',
@@ -102,8 +105,9 @@ export default function Projects() {
       color: '#FF2E2E',
       role: 'Retention Specialist & Motion Designer',
       client: 'Influence Network',
+      year: '2025',
       timeline: 'Ongoing',
-      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview', // Paste your Google Drive preview link here!
+      driveLink: 'https://drive.google.com/file/d/1_V4QjO7Xp7C2yqJ-P5g3XgUaH7l9_K8n/preview',
       coverImage: '/social_cover.png',
       details: {
         tagline: 'Hacking the human attention span with rapid-fire visuals.',
@@ -136,7 +140,7 @@ export default function Projects() {
           </div>
           
           <div className="editorial-main-grid">
-            <h2 className="editorial-title">Selected Cuts</h2>
+            <h2 className="editorial-title">SELECTED CUTS</h2>
             <div className="editorial-desc-box">
               <p>
                 A highly refined selection of motion work and pacing cuts. Hover a strip to select it with a stark dark outline, and click to watch the background spread into a cinematic dossier transition.
@@ -160,7 +164,6 @@ export default function Projects() {
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
                 onClick={(e) => {
-                  // Capture exact position BEFORE React opens the overlay
                   const el = stripRefs.current[idx];
                   if (el) {
                     const rect = el.getBoundingClientRect();
@@ -179,47 +182,34 @@ export default function Projects() {
 
                 <div className="strip-main-row">
                   
-                  {/* Number & Basic info */}
-                  <div className="strip-index-block">
-                    <span className="strip-number font-mono">0{project.number}</span>
-                    <span className="strip-category-label uppercase">{project.category}</span>
-                  </div>
+                  {/* Big Number Backdrop */}
+                  <span className="strip-number">00{project.number}</span>
 
-                  {/* Typographic Interlocked Title */}
+                  {/* Title & Category Box */}
                   <div className="strip-title-block">
-                    <h3 className="strip-large-title">
-                      {project.title.split(' ').map((word, wIdx) => {
-                        if (
-                          word === 'commercial' || 
-                          word === 'cinematic' || 
-                          word === 'documentary' || 
-                          word === 'social'
-                        ) {
-                          return <span key={wIdx} className="strip-serif-italic">{word} </span>;
-                        }
-                        return <span key={wIdx}>{word} </span>;
-                      })}
-                    </h3>
+                    <span className="strip-category-label">{project.category}</span>
+                    <h3 className="strip-large-title">{project.title}</h3>
                   </div>
 
-                  {/* Micro Specs List */}
-                  <div className="strip-meta-list font-mono">
-                    <div className="meta-spec-row">
+                  {/* Micro Specs List formatted vertically to match mockup */}
+                  <div className="strip-meta-list">
+                    <div className="meta-spec-item">
                       <span className="lbl">ROLE</span>
                       <span className="val">{project.role}</span>
                     </div>
-                    <div className="meta-spec-row">
+                    <div className="meta-spec-item">
                       <span className="lbl">CLIENT</span>
                       <span className="val">{project.client}</span>
                     </div>
+                    <div className="meta-spec-item">
+                      <span className="lbl">YEAR</span>
+                      <span className="val">{project.year}</span>
+                    </div>
                   </div>
 
-                  {/* Action Arrow trigger */}
+                  {/* Action Arrow trigger - sleek simple right arrow */}
                   <div className="strip-arrow-trigger">
-                    <span className="arrow-text-action font-mono">VIEW DOSSIER</span>
-                    <span className="arrow-icon-circle">
-                      <ArrowUpRight size={18} />
-                    </span>
+                    <ArrowRight className="arrow-icon-simple" size={26} />
                   </div>
 
                 </div>
@@ -241,7 +231,6 @@ export default function Projects() {
             setOriginRect(null);
           }}
           onNextProject={() => {
-            // Capture origin of the NEXT strip before switching
             const nextIdx = (activeProjectIndex + 1) % projectsData.length;
             const nextEl = stripRefs.current[nextIdx];
             if (nextEl) {

@@ -46,21 +46,34 @@ export default function Header() {
 
   /* Scroll tracking */
   useEffect(() => {
+    const isDesktop = !isMobile;
+    const scrollContainer = isDesktop ? (document.querySelector('.app-wrapper') || window) : window;
+
     const onScroll = () => {
-      const docH = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = docH > 0 ? Math.min(Math.max(window.scrollY / docH, 0), 1) : 0;
+      const el = scrollContainer === window ? document.documentElement : scrollContainer;
+      const scrollY = scrollContainer === window ? window.scrollY : scrollContainer.scrollTop;
+      const scrollHeight = el.scrollHeight;
+      const clientHeight = scrollContainer === window ? window.innerHeight : el.clientHeight;
+      const docH = scrollHeight - clientHeight;
+      const pct = docH > 0 ? Math.min(Math.max(scrollY / docH, 0), 1) : 0;
       setScrollPercent(Math.round(pct * 100));
-      if (window.scrollY < 60) { setActive('home'); return; }
+      if (scrollY < 60) { setActive('home'); return; }
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    scrollContainer.addEventListener('scroll', onScroll, { passive: true });
 
+    const rootEl = isDesktop ? document.querySelector('.app-wrapper') : null;
     const io = new IntersectionObserver(
       (entries) => {
-        if (window.scrollY < 60) return;
+        const scrollY = scrollContainer === window ? window.scrollY : scrollContainer.scrollTop;
+        if (scrollY < 60) return;
         entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
       },
-      { rootMargin: '-80px 0px -45% 0px', threshold: 0.1 }
+      { 
+        root: rootEl,
+        rootMargin: isDesktop ? '-80px 0px -45% 0px' : '-60px 0px -45% 0px', 
+        threshold: 0.1 
+      }
     );
 
     NAV.forEach(({ id }) => {
@@ -71,13 +84,13 @@ export default function Header() {
     onScroll();
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      scrollContainer.removeEventListener('scroll', onScroll);
       NAV.forEach(({ id }) => {
         const el = document.getElementById(id);
         if (el) io.unobserve(el);
       });
     };
-  }, []);
+  }, [isMobile]);
 
   /* Lock body scroll when mobile menu is open */
   useEffect(() => {
@@ -90,28 +103,38 @@ export default function Header() {
     const targetEl = document.getElementById(id);
     if (!targetEl) return;
 
-    const targetPosition = targetEl.getBoundingClientRect().top + window.scrollY;
-    const isMobile = window.innerWidth <= 1024;
-    const offset = isMobile ? 60 : 0;
+    const isMobileDevice = window.innerWidth <= 1024;
+    const offset = isMobileDevice ? 60 : 0;
 
-    const startPosition = window.scrollY;
-    const distance = targetPosition - startPosition - offset;
-    let startTime = null;
-    const duration = 800;
+    if (isMobileDevice) {
+      const targetPosition = targetEl.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: targetPosition - offset,
+        behavior: 'smooth'
+      });
+    } else {
+      const scrollContainer = document.querySelector('.app-wrapper');
+      if (scrollContainer) {
+        // Temporarily disable scroll snap to prevent delay/lag
+        scrollContainer.classList.add('no-snap');
+        
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+        const relativeTop = targetRect.top - containerRect.top + scrollContainer.scrollTop;
 
-    const easeInOutQuint = (t) =>
-      t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
+        scrollContainer.scrollTo({
+          top: relativeTop,
+          behavior: 'smooth'
+        });
 
-    const animation = (currentTime) => {
-      if (startTime === null) startTime = currentTime;
-      const timeElapsed = currentTime - startTime;
-      const progress = Math.min(timeElapsed / duration, 1);
-      window.scrollTo(0, startPosition + distance * easeInOutQuint(progress));
-      if (timeElapsed < duration) requestAnimationFrame(animation);
-    };
-
-    requestAnimationFrame(animation);
+        // Re-enable scroll snap after transition
+        setTimeout(() => {
+          scrollContainer.classList.remove('no-snap');
+        }, 800);
+      }
+    }
   };
+
 
   return (
     <>
@@ -193,7 +216,7 @@ export default function Header() {
         </aside>
       )}
 
-      {/* ── MOBILE: Top hamburger bar (only when isMobile) ── */}
+      {/* ── MOBILE: Sleek branding top bar ── */}
       {isMobile && (
         <header className="mobile-top-bar">
           <div className="mobile-bar-brand">
@@ -201,46 +224,30 @@ export default function Header() {
             <span className="mobile-brand-name">YAR YASH</span>
             <div className="mobile-bar-led">
               <span className="led-dot green-led"></span>
+              <span className="mobile-bar-clock font-mono">{time}</span>
             </div>
           </div>
-
-          <button
-            className={`mobile-hamburger-btn ${menuOpen ? 'is-open' : ''}`}
-            onClick={() => setMenuOpen(prev => !prev)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {menuOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
-          </button>
         </header>
       )}
 
-      {/* ── MOBILE: Slide-down full-screen menu (only when isMobile) ── */}
+      {/* ── MOBILE: Sleek glassmorphic floating bottom pill nav dock ── */}
       {isMobile && (
-        <div className={`mobile-menu-overlay ${menuOpen ? 'mobile-menu-open' : ''}`}>
-          <nav className="mobile-menu-nav">
-            {NAV.map(({ id, num, label, icon: Icon }, i) => (
-              <a
+        <nav className="mobile-floating-pill-nav">
+          {NAV.map(({ id, num, label, icon: Icon }) => {
+            const isActive = active === id;
+            return (
+              <button
                 key={id}
-                href={`#${id}`}
-                className={`mobile-nav-item ${active === id ? 'mobile-nav-active' : ''}`}
-                style={{ transitionDelay: menuOpen ? `${i * 60}ms` : '0ms' }}
+                className={`mobile-pill-btn ${isActive ? 'active-pill' : ''}`}
                 onClick={(e) => { e.preventDefault(); scrollTo(id); }}
+                aria-label={label}
               >
-                <span className="mobile-nav-num">{num}</span>
-                <div className="mobile-nav-icon">
-                  <Icon size={20} strokeWidth={active === id ? 2.5 : 1.5} />
-                </div>
-                <span className="mobile-nav-label">{label}</span>
-                <div className="mobile-nav-arrow">→</div>
-              </a>
-            ))}
-          </nav>
-
-          <div className="mobile-menu-footer">
-            <span className="mobile-menu-clock">{time} IST</span>
-            <span className="mobile-menu-read">SCROLL: {scrollPercent}%</span>
-          </div>
-        </div>
+                <Icon size={18} strokeWidth={isActive ? 2.5 : 1.5} />
+                <span className="mobile-pill-label">{label}</span>
+              </button>
+            );
+          })}
+        </nav>
       )}
     </>
   );

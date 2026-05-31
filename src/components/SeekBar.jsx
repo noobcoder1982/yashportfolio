@@ -9,16 +9,31 @@ export default function SeekBar() {
   const trackRef                      = useRef(null);
   const isDragging                    = useRef(false);
 
+  const getScrollElement = () => {
+    const isDesktop = window.innerWidth >= 1025;
+    const wrapper = document.querySelector('.app-wrapper');
+    return isDesktop && wrapper ? wrapper : null;
+  };
+
   const update = () => {
-    const scrollTop  = window.scrollY;
-    const viewH      = window.innerHeight;
-    const totalH     = document.documentElement.scrollHeight;
+    const scrollEl = getScrollElement();
+    let scrollTop, viewH, totalH;
+
+    if (scrollEl) {
+      scrollTop = scrollEl.scrollTop;
+      viewH     = scrollEl.clientHeight;
+      totalH    = scrollEl.scrollHeight;
+    } else {
+      scrollTop = window.scrollY;
+      viewH     = window.innerHeight;
+      totalH    = document.documentElement.scrollHeight;
+    }
+
     const scrollable = totalH - viewH;
     if (scrollable <= 0) return;
 
     const pct       = (scrollTop / scrollable) * 100;
     const thumbPct  = Math.max(5, (viewH / totalH) * 100);
-    // thumb top: map scrollPct into the remaining track space
     const topPct    = pct * (1 - thumbPct / 100);
 
     setProgress(pct);
@@ -38,12 +53,13 @@ export default function SeekBar() {
     const onScroll = () => { update(); showBar(); };
     const onResize = () => { update(); };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    // Use capture phase so scroll events inside .app-wrapper can be intercepted
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
     window.addEventListener('resize', onResize, { passive: true });
     update();
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScroll, { capture: true });
       window.removeEventListener('resize', onResize);
       clearTimeout(hideTimer.current);
     };
@@ -52,11 +68,18 @@ export default function SeekBar() {
   /* Click on track — jump to position */
   const handleTrackClick = (e) => {
     if (!trackRef.current) return;
-    const rect   = trackRef.current.getBoundingClientRect();
-    const clickY = e.clientY - rect.top;
-    const pct    = clickY / rect.height;
-    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    window.scrollTo({ top: pct * scrollable, behavior: 'smooth' });
+    const rect     = trackRef.current.getBoundingClientRect();
+    const clickY   = e.clientY - rect.top;
+    const pct      = clickY / rect.height;
+    
+    const scrollEl = getScrollElement();
+    if (scrollEl) {
+      const scrollable = scrollEl.scrollHeight - scrollEl.clientHeight;
+      scrollEl.scrollTo({ top: pct * scrollable, behavior: 'smooth' });
+    } else {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo({ top: pct * scrollable, behavior: 'smooth' });
+    }
   };
 
   /* Drag thumb */
@@ -64,15 +87,27 @@ export default function SeekBar() {
     e.preventDefault();
     isDragging.current = true;
     const startY   = e.clientY;
-    const startTop = window.scrollY;
+    
+    const scrollEl = getScrollElement();
+    const startTop = scrollEl ? scrollEl.scrollTop : window.scrollY;
 
     const onMove = (me) => {
       const dy = me.clientY - startY;
-      const totalH = document.documentElement.scrollHeight;
-      const viewH  = window.innerHeight;
-      const trackH = trackRef.current?.getBoundingClientRect().height ?? viewH;
-      const scrollDelta = (dy / trackH) * (totalH - viewH);
-      window.scrollTo(0, startTop + scrollDelta);
+      let totalH, viewH, trackH;
+      
+      if (scrollEl) {
+        totalH = scrollEl.scrollHeight;
+        viewH  = scrollEl.clientHeight;
+        trackH = trackRef.current?.getBoundingClientRect().height ?? viewH;
+        const scrollDelta = (dy / trackH) * (totalH - viewH);
+        scrollEl.scrollTop = startTop + scrollDelta;
+      } else {
+        totalH = document.documentElement.scrollHeight;
+        viewH  = window.innerHeight;
+        trackH = trackRef.current?.getBoundingClientRect().height ?? viewH;
+        const scrollDelta = (dy / trackH) * (totalH - viewH);
+        window.scrollTo(0, startTop + scrollDelta);
+      }
     };
 
     const onUp = () => {
