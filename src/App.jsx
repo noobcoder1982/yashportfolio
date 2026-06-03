@@ -26,7 +26,7 @@ export default function App() {
 
   const handlePreloaderExit = React.useCallback(() => {
     setPhase('exiting');
-    setTimeout(() => setPhase('done'), 1400);
+    setTimeout(() => setPhase('done'), 100);
   }, []);
 
   return (

@@ -1,73 +1,169 @@
-import React, { useState } from 'react';
-import { Sliders, Cpu, Code, BarChart2, Terminal } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Sliders, Cpu, Zap, Activity, Shield, Clock, Package } from 'lucide-react';
+
+/* ── SVG Logo Components — brand accurate ── */
+function LogoPremierePro({ size = 52 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="16" fill="#2B1B58"/>
+      {/* Pr lettermark — Adobe style */}
+      <text x="50" y="67" textAnchor="middle" fontFamily="'Arial Black', 'Arial', sans-serif" fontSize="46" fontWeight="900" fill="#9999FF" letterSpacing="-3">Pr</text>
+    </svg>
+  );
+}
+
+function LogoAfterEffects({ size = 52 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="16" fill="#0D0045"/>
+      <text x="50" y="67" textAnchor="middle" fontFamily="'Arial Black', 'Arial', sans-serif" fontSize="46" fontWeight="900" fill="#9999FF" letterSpacing="-3">Ae</text>
+    </svg>
+  );
+}
+
+function LogoPhotoshop({ size = 52 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="16" fill="#001424"/>
+      <text x="50" y="67" textAnchor="middle" fontFamily="'Arial Black', 'Arial', sans-serif" fontSize="46" fontWeight="900" fill="#31A8FF" letterSpacing="-3">Ps</text>
+    </svg>
+  );
+}
+
+function LogoIllustrator({ size = 52 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="16" fill="#2E0E00"/>
+      <text x="50" y="67" textAnchor="middle" fontFamily="'Arial Black', 'Arial', sans-serif" fontSize="46" fontWeight="900" fill="#FF9A00" letterSpacing="-3">Ai</text>
+    </svg>
+  );
+}
+
+function LogoFigma({ size = 52 }) {
+  // Accurate Figma F-shape: two stacked rounded rects left + circle right
+  const s = size;
+  const u = s / 100;
+  return (
+    <svg width={s} height={s} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="16" fill="#1A1A1A"/>
+      {/* Bottom-left: green */}
+      <rect x="26" y="62" width="22" height="22" rx="11" fill="#0ACF83"/>
+      {/* Middle-left: purple */}
+      <rect x="26" y="40" width="22" height="22" rx="0" fill="#A259FF"/>
+      {/* Top-left: red */}
+      <rect x="26" y="18" width="22" height="22" rx="11" fill="#F24E1E"/>
+      {/* Top-right: orange */}
+      <rect x="48" y="18" width="22" height="22" rx="11" fill="#FF7262"/>
+      {/* Center-right: blue circle */}
+      <circle cx="59" cy="51" r="11" fill="#1ABCFE"/>
+    </svg>
+  );
+}
+
+function LogoAnimate({ size = 52 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="16" fill="#1C0012"/>
+      <text x="50" y="67" textAnchor="middle" fontFamily="'Arial Black', 'Arial', sans-serif" fontSize="46" fontWeight="900" fill="#EC4899" letterSpacing="-3">An</text>
+    </svg>
+  );
+}
+
+function LogoMaya({ size = 52 }) {
+  // Autodesk Maya — teal/blue brand color, M lettermark
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="16" fill="#0D2233"/>
+      {/* Maya M mark — two triangles forming an M */}
+      <path d="M18 76 L18 34 L50 60 L82 34 L82 76" stroke="#00B4D8" strokeWidth="7" strokeLinejoin="round" strokeLinecap="round" fill="none"/>
+    </svg>
+  );
+}
+
+const TOOL_LOGOS = {
+  'Adobe Premiere Pro':  LogoPremierePro,
+  'Adobe After Effects': LogoAfterEffects,
+  'Adobe Photoshop':     LogoPhotoshop,
+  'Adobe Illustrator':   LogoIllustrator,
+  'Figma':               LogoFigma,
+  'Adobe Animate':       LogoAnimate,
+  'Autodesk Maya':       LogoMaya,
+};
 
 const tools = [
-  { name: 'Adobe Premiere Pro', short: 'Pr', color: '#E44D26', level: 92, category: 'MOTION DESIGN' },
-  { name: 'Adobe After Effects', short: 'Ae', color: '#38BDF8', level: 85, category: 'MOTION DESIGN' },
-  { name: 'Adobe Photoshop', short: 'Ps', color: '#61DAFB', level: 95, category: 'VISUAL DESIGN' },
-  { name: 'Adobe Illustrator', short: 'Ai', color: '#F1502F', level: 90, category: 'VISUAL DESIGN' },
-  { name: 'Figma', short: 'Fig', color: '#0ACF83', level: 88, category: 'UI/UX DESIGN' },
-  { name: 'Adobe Animate', short: 'An', color: '#EC4899', level: 80, category: '2D ARTWORK' },
-  { name: 'Autodesk Maya', short: 'Ma', color: '#A855F7', level: 42, category: '3D MODELING' },
+  { name: 'Adobe Premiere Pro', short: 'Pr', color: '#9999FF', level: 92, category: 'MOTION DESIGN', size: 'large' },
+  { name: 'Adobe After Effects', short: 'Ae', color: '#38BDF8', level: 85, category: 'MOTION DESIGN', size: 'tall' },
+  { name: 'Adobe Photoshop', short: 'Ps', color: '#31A8FF', level: 95, category: 'VISUAL DESIGN', size: 'small' },
+  { name: 'Adobe Illustrator', short: 'Ai', color: '#FF9A00', level: 90, category: 'VISUAL DESIGN', size: 'small' },
+  { name: 'Figma', short: 'Fig', color: '#0ACF83', level: 88, category: 'UI/UX DESIGN', size: 'wide' },
+  { name: 'Adobe Animate', short: 'An', color: '#EC4899', level: 80, category: '2D ARTWORK', size: 'small' },
+  { name: 'Autodesk Maya', short: 'Ma', color: '#A855F7', level: 42, category: '3D MODELING', size: 'small' },
 ];
 
 const toolDetails = {
   'Adobe Premiere Pro': {
-    desc: 'Orchestrates complex narrative cuts, pace-matching, and multichannel audio mixdowns inside Premiere Pro. Specialized in logarithmic color calibration and dynamic speed ramp curves.',
+    desc: 'Orchestrates complex narrative cuts, pace-matching, and multichannel audio mixdowns. Specialized in logarithmic color calibration and dynamic speed ramp curves.',
     capabilities: ['Dynamic Narrative Cuts', 'SMPTE Sync Alignment', 'Rec.709 Color Calibration', 'Advanced Audio Mastering'],
     status: 'COMPILE_SUCCESS',
     latency: '0.04s',
     env: 'production',
-    bundleSize: '1.2 MB'
+    bundleSize: '1.2 MB',
+    uptime: '99.8%',
   },
   'Adobe After Effects': {
-    desc: 'Brings vector layouts and typographic matrices to life. Yash specializes in kinetic animations, realistic particle physics solvers, custom expressions, and parallax multi-cam staging.',
+    desc: 'Brings vector layouts and typographic matrices to life. Specialized in kinetic animations, realistic particle physics solvers, custom expressions, and parallax multi-cam staging.',
     capabilities: ['3D Camera Vector Solvers', 'Kinetic Typography Layouts', 'Expression-based Vector Rigs', 'Multi-layer VFX Composites'],
     status: 'COMPILE_SUCCESS',
     latency: '0.12s',
     env: 'production',
-    bundleSize: '3.4 MB'
+    bundleSize: '3.4 MB',
+    uptime: '97.2%',
   },
   'Adobe Photoshop': {
-    desc: 'Constructs complex raster graphics, creative photo composites, high-end visual brand assets, and dark-room digital adjustments. Expert in blend modes, tone matching, and typographic layouts.',
+    desc: 'Constructs complex raster graphics, creative photo composites, high-end visual brand assets, and dark-room digital adjustments. Expert in blend modes and typographic layouts.',
     capabilities: ['Advanced Photo Composites', 'Organic Texture Blending', 'Tone Curve Tuning & Grading', 'Studio Layout Architecture'],
     status: 'ACTIVE_SHADERS',
     latency: '0.01s',
     env: 'production',
-    bundleSize: '4.8 MB'
+    bundleSize: '4.8 MB',
+    uptime: '99.9%',
   },
   'Adobe Illustrator': {
-    desc: 'Drafts infinitely scalable vector icons, primary brand marks, visual identity grids, editorial typography, and high-impact layout illustrations with brutalist precision and flawless geometry.',
+    desc: 'Drafts infinitely scalable vector icons, primary brand marks, visual identity grids, editorial typography, and high-impact illustrations with precision geometry.',
     capabilities: ['Scalable Brand Mark Grids', 'Systematic Visual Identities', 'Bespoke Icon Typography', 'High-Contrast Vector Assets'],
     status: 'MATH_MATRIX_READY',
     latency: '0.02s',
     env: 'stable',
-    bundleSize: '0.8 MB'
+    bundleSize: '0.8 MB',
+    uptime: '99.5%',
   },
   'Figma': {
-    desc: 'Develops interactive high-fidelity user prototypes, structured wireframes, component design systems, and responsive layouts with absolute grid discipline and layout variable tracking.',
-    capabilities: ['Component Architecture', 'UI Grid Layout Design', 'Micro-Interaction Prototypes', 'Token variables & Styles'],
+    desc: 'Develops interactive high-fidelity user prototypes, structured wireframes, component design systems, and responsive layouts with absolute grid discipline.',
+    capabilities: ['Component Architecture', 'UI Grid Layout Design', 'Micro-Interaction Prototypes', 'Token Variables & Styles'],
     status: 'UI_STACK_CONVERGED',
     latency: '0.05s',
     env: 'production',
-    bundleSize: '1.8 MB'
+    bundleSize: '1.8 MB',
+    uptime: '98.6%',
   },
   'Adobe Animate': {
-    desc: 'Crafts hand-drawn and vector-based 2D frame reels, frame-by-frame character loops, active morph cuts, and vintage aesthetic animations mimicking standard physical cartoon cells.',
+    desc: 'Crafts hand-drawn and vector-based 2D frame reels, frame-by-frame character loops, active morph cuts, and vintage aesthetic animations mimicking physical cartoon cells.',
     capabilities: ['Hand-Drawn Onion Skinning', 'Smooth Vector Tweening', 'Retro VHS Anim Reels', 'Frame-by-Frame Key Cycles'],
     status: 'CELL_MATRIX_STABLE',
     latency: '0.08s',
     env: 'stable',
-    bundleSize: '2.2 MB'
+    bundleSize: '2.2 MB',
+    uptime: '96.4%',
   },
   'Autodesk Maya': {
-    desc: 'An expanding creative space. Yash is actively learning the pipelines of 3D polygonal construction, coordinate mapping, surface texturing, skeletal rigging, and orbiting camera controls.',
+    desc: 'An expanding creative space. Actively learning the pipelines of 3D polygonal construction, coordinate mapping, surface texturing, skeletal rigging, and orbiting camera controls.',
     capabilities: ['Polygonal Mesh Drafting', 'Procedural Texture Mapping', '3D Scene Orbit Controls', 'Introductory Rigging'],
     status: 'COMPILING_INDEX (42%)',
     latency: '0.84s',
     env: 'development',
-    bundleSize: '14.2 MB'
-  }
+    bundleSize: '14.2 MB',
+    uptime: '72.1%',
+  },
 };
 
 const skillCategories = [
@@ -75,62 +171,84 @@ const skillCategories = [
     id: '01',
     tag: 'DESIGN',
     title: 'Visual Identity & Design',
-    skills: [
-      'Graphic Layout Designing',
-      'Branding & Visual Archetypes',
-      'Social Media Assets',
-      'Interactive Figma Mockups',
-    ],
+    skills: ['Graphic Layout Designing', 'Branding & Visual Archetypes', 'Social Media Assets', 'Interactive Figma Mockups'],
   },
   {
     id: '02',
     tag: 'ARTWORK',
     title: 'Illustration & Composites',
-    skills: [
-      'Photo Editing & Compositing',
-      'Scalable Vector Illustration',
-      'Traditional 2D Animations',
-    ],
+    skills: ['Photo Editing & Compositing', 'Scalable Vector Illustration', 'Traditional 2D Animations'],
   },
   {
     id: '03',
     tag: 'MOTION',
     title: 'Video & Motion Graphics',
-    skills: [
-      'Narrative Video Cuts',
-      'Kinetic Typography Motion',
-      'VFX Camera Solvers & Composites',
-    ],
+    skills: ['Narrative Video Cuts', 'Kinetic Typography Motion', 'VFX Camera Solvers & Composites'],
   },
   {
     id: '04',
     tag: 'TECH',
     title: 'Web Design & 3D Assets',
-    skills: [
-      'Responsive Web Layouts',
-      'Polygonal 3D Mesh Assemblies',
-      'Studio Production Mechanics',
-    ],
+    skills: ['Responsive Web Layouts', 'Polygonal 3D Mesh Assemblies', 'Studio Production Mechanics'],
   },
 ];
 
+// Circular proficiency ring component
+function ProficiencyRing({ level, color, size = 44 }) {
+  const radius = (size - 6) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (level / 100) * circumference;
+  return (
+    <svg width={size} height={size} className="bento-ring-svg">
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+      <circle
+        cx={size / 2} cy={size / 2} r={radius} fill="none"
+        stroke={color} strokeWidth="3"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1)', filter: `drop-shadow(0 0 4px ${color}88)` }}
+      />
+      <text x={size / 2} y={size / 2 + 4} textAnchor="middle" fill={color} fontSize="9" fontFamily="'Space Mono', monospace" fontWeight="700">
+        {level}%
+      </text>
+    </svg>
+  );
+}
+
 export default function Skills() {
   const [selectedToolName, setSelectedToolName] = useState('Adobe Premiere Pro');
-  const [activeConsoleTab, setActiveConsoleTab] = useState('json'); // 'json' | 'vector'
+  const [animating, setAnimating] = useState(false);
+  const [displayedTool, setDisplayedTool] = useState('Adobe Premiere Pro');
+  const [scanline, setScanline] = useState(false);
+  const panelRef = useRef(null);
 
   const activeTool = tools.find(t => t.name === selectedToolName) || tools[0];
   const activeDetails = toolDetails[selectedToolName] || toolDetails[tools[0].name];
+  const displayDetails = toolDetails[displayedTool] || toolDetails[tools[0].name];
+  const displayTool = tools.find(t => t.name === displayedTool) || tools[0];
+
+  function handleSelect(name) {
+    if (name === selectedToolName) return;
+    setAnimating(true);
+    setScanline(true);
+    setTimeout(() => {
+      setDisplayedTool(name);
+      setSelectedToolName(name);
+      setAnimating(false);
+    }, 280);
+    setTimeout(() => setScanline(false), 700);
+  }
 
   return (
     <section id="skills" className="skills-section">
       <div className="container">
 
-        {/* ── MOBILE SKILLS REDESIGN ── */}
+        {/* ── MOBILE SKILLS LAYOUT ── */}
         <div className="skills-mobile-layout">
           <div className="skills-mobile-tag"><Sliders size={11} /> ABILITIES MATRIX</div>
           <h2 className="skills-mobile-title">THE PRODUCTION<br /><span className="skills-mobile-title-accent">SUITE.</span></h2>
-
-          {/* Tool bars */}
           <div className="skills-mobile-tools">
             {tools.map((tool) => (
               <div key={tool.name} className="smt-row">
@@ -145,8 +263,6 @@ export default function Skills() {
               </div>
             ))}
           </div>
-
-          {/* Capability cards */}
           <div className="skills-mobile-caps">
             {skillCategories.map((cat) => (
               <div key={cat.id} className="smc-card">
@@ -168,198 +284,216 @@ export default function Skills() {
         {/* ── DESKTOP SKILLS LAYOUT ── */}
         <div className="skills-desktop-layout">
 
-        {/* Cohesive stark Swiss Header matching Projects section */}
-        <div className="editorial-header">
-          <div className="editorial-meta">
-            <span className="meta-tag"><Sliders size={12} /> ABILITIES MATRIX</span>
-            <span className="meta-divider"></span>
-            <span className="meta-tag"><Cpu size={12} /> SYSTEM SPECIFICATION REPORT</span>
-          </div>
-          
-          <div className="editorial-main-grid">
-            <h2 className="editorial-title">THE PRODUCTION SUITE</h2>
-            <div className="editorial-desc-box">
-              <p>
-                Yash controls a dual-engine production suite: high-precision graphic layouts and multi-track motion timelines. Select an inlet row to load the developer metrics screen.
-              </p>
+          {/* Header */}
+          <div className="editorial-header">
+            <div className="editorial-meta">
+              <span className="meta-tag"><Sliders size={12} /> ABILITIES MATRIX</span>
+              <span className="meta-divider"></span>
+              <span className="meta-tag"><Cpu size={12} /> SYSTEM SPECIFICATION REPORT</span>
             </div>
-          </div>
-        </div>
-
-        {/* Dynamic Studio Editorial Grid */}
-        <div className="skills-editorial-grid">
-          
-          {/* LEFT COLUMN: Typographic Tool Directory */}
-          <div className="skills-directory-bay">
-            <div className="directory-list-header">
-              <span className="dir-hdr-num">ID</span>
-              <span className="dir-hdr-name">SOFTWARE ENGINE</span>
-              <span className="dir-hdr-cat">PRIMARY DISCIPLINE</span>
-            </div>
-            
-            <div className="directory-list-rows">
-              {tools.map((tool, idx) => {
-                const isActive = tool.name === selectedToolName;
-                return (
-                  <button
-                    key={tool.name}
-                    className={`directory-row-btn ${isActive ? 'active-row' : ''}`}
-                    onClick={() => setSelectedToolName(tool.name)}
-                  >
-                    <span className="dir-row-num">0{idx + 1}</span>
-                    <span className="dir-row-name">{tool.name.replace('Adobe ', '')}</span>
-                    <span className="dir-row-cat">{tool.category}</span>
-                    <span className="dir-row-led-indicator" style={{ backgroundColor: isActive ? activeTool.color : 'transparent' }}></span>
-                  </button>
-                );
-              })}
+            <div className="editorial-main-grid">
+              <h2 className="editorial-title">THE PRODUCTION SUITE</h2>
+              <div className="editorial-desc-box">
+                <p>Yash operates a dual-engine production suite spanning motion, visual, and interface design. Select a software module to load its diagnostic readout.</p>
+              </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Real Web Developer Bento Console Card */}
-          <div className="skills-dev-console" style={{ '--dev-glow-color': activeTool.color }}>
-            
-            {/* Top Workspace Tab Bar */}
-            <div className="dev-console-tabbar">
-              <div className="tabbar-left">
-                <span className="window-dot dot-red"></span>
-                <span className="window-dot dot-yellow"></span>
-                <span className="window-dot dot-green"></span>
-              </div>
-              <div className="tabbar-tabs">
-                <button 
-                  className={`tab-btn ${activeConsoleTab === 'json' ? 'active-tab' : ''}`}
-                  onClick={() => setActiveConsoleTab('json')}
-                >
-                  <Code size={11} className="tab-icon" />
-                  <span>package.json</span>
-                </button>
-                <button 
-                  className={`tab-btn ${activeConsoleTab === 'vector' ? 'active-tab' : ''}`}
-                  onClick={() => setActiveConsoleTab('vector')}
-                >
-                  <BarChart2 size={11} className="tab-icon" />
-                  <span>vectors.svg</span>
-                </button>
-              </div>
-              <div className="tabbar-right font-mono">
-                node v20.12.0
-              </div>
+          {/* ── BENTO + HUD GRID ── */}
+          <div className="bento-hud-grid">
+
+            {/* LEFT: Bento box software grid */}
+            <div className="bento-software-grid">
+
+              {/* Tile: Premiere Pro — large */}
+              <BentoTile tool={tools[0]} isActive={selectedToolName === tools[0].name} onClick={() => handleSelect(tools[0].name)} className="bento-tile-large" />
+
+              {/* Tile: After Effects — tall */}
+              <BentoTile tool={tools[1]} isActive={selectedToolName === tools[1].name} onClick={() => handleSelect(tools[1].name)} className="bento-tile-tall" />
+
+              {/* Tiles: Photoshop + Illustrator — small */}
+              <BentoTile tool={tools[2]} isActive={selectedToolName === tools[2].name} onClick={() => handleSelect(tools[2].name)} className="bento-tile-small" />
+              <BentoTile tool={tools[3]} isActive={selectedToolName === tools[3].name} onClick={() => handleSelect(tools[3].name)} className="bento-tile-small" />
+
+              {/* Tile: Figma — wide */}
+              <BentoTile tool={tools[4]} isActive={selectedToolName === tools[4].name} onClick={() => handleSelect(tools[4].name)} className="bento-tile-wide" />
+
+              {/* Tiles: Animate + Maya — small */}
+              <BentoTile tool={tools[5]} isActive={selectedToolName === tools[5].name} onClick={() => handleSelect(tools[5].name)} className="bento-tile-small" />
+              <BentoTile tool={tools[6]} isActive={selectedToolName === tools[6].name} onClick={() => handleSelect(tools[6].name)} className="bento-tile-full bento-tile-maya" />
+
             </div>
 
-            {/* Main Console View Area */}
-            <div className="dev-console-body">
-              {activeConsoleTab === 'json' ? (
-                /* TAB 1: Code Syntax highlighting for JSON Config */
-                <pre className="syntax-codeblock font-mono">
-                  <code>
-                    <span className="code-key">"name"</span>: <span className="code-string">"{activeTool.name}"</span>,<br />
-                    <span className="code-key">"shortCode"</span>: <span className="code-string">"{activeTool.short}"</span>,<br />
-                    <span className="code-key">"primaryDiscipline"</span>: <span className="code-string">"{activeTool.category}"</span>,<br />
-                    <span className="code-key">"integrationLevel"</span>: <span className="code-number">{activeTool.level}%</span>,<br />
-                    <span className="code-key">"engineStatus"</span>: <span className="code-string">"{activeDetails.status}"</span>,<br />
-                    <span className="code-key">"latency"</span>: <span className="code-number">"{activeDetails.latency}"</span>,<br />
-                    <span className="code-key">"verifiedCapabilities"</span>: [<br />
-                    {activeDetails.capabilities.map((cap, i) => (
-                      <React.Fragment key={i}>
-                        &nbsp;&nbsp;<span className="code-string">"{cap}"</span>
-                        {i < activeDetails.capabilities.length - 1 ? ',' : ''}
-                        <br />
-                      </React.Fragment>
-                    ))}
-                    ]
-                  </code>
-                </pre>
-              ) : (
-                /* TAB 2: Minimalist Clean Developer Grid/Graph */
-                <div className="console-chart-view">
-                  <div className="chart-meta font-mono">
-                    <span>INDEXED ABILITIES SCALE // HISTOGRAM</span>
-                    <span style={{ color: activeTool.color }}>ACTIVE: {activeTool.name}</span>
-                  </div>
-                  
-                  {/* Clean SVG graph visualizer showing all tool values */}
-                  <div className="chart-visualizer-box">
-                    {tools.map((t) => {
-                      const isSelf = t.name === selectedToolName;
-                      return (
-                        <div key={t.name} className="chart-bar-col">
-                          <div className="bar-track">
-                            <div 
-                              className="bar-fill" 
-                              style={{ 
-                                height: `${t.level}%`, 
-                                backgroundColor: isSelf ? activeTool.color : 'rgba(255, 255, 255, 0.1)',
-                                boxShadow: isSelf ? `0 0 12px ${activeTool.color}55` : 'none'
-                              }}
-                            ></div>
-                          </div>
-                          <span className="bar-label font-mono" style={{ color: isSelf ? '#ffffff' : 'rgba(255,255,255,0.4)' }}>
-                            {t.short}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+            {/* RIGHT: Futuristic HUD Panel */}
+            <div
+              ref={panelRef}
+              className={`hud-panel ${animating ? 'hud-panel-switching' : ''}`}
+              style={{ '--hud-color': displayTool.color }}
+            >
+              {/* Scanline overlay */}
+              {scanline && <div className="hud-scanline-sweep" />}
+
+              {/* Corner brackets */}
+              <div className="hud-corner hud-tl" />
+              <div className="hud-corner hud-tr" />
+              <div className="hud-corner hud-bl" />
+              <div className="hud-corner hud-br" />
+
+              {/* Top status bar */}
+              <div className="hud-topbar">
+                <div className="hud-topbar-left">
+                  <span className="hud-led" style={{ background: displayTool.color, boxShadow: `0 0 8px ${displayTool.color}` }} />
+                  <span className="hud-label">SYS.DIAGNOSTIC</span>
+                  <span className="hud-divider">|</span>
+                  <span className="hud-label" style={{ color: displayTool.color }}>{displayDetails.status}</span>
                 </div>
-              )}
-            </div>
-
-            {/* Spec Narrative paragraph */}
-            <div className="dev-console-description">
-              <p>{activeDetails.desc}</p>
-            </div>
-
-            {/* Bottom Real Web Developer Performance Metrics Bar */}
-            <div className="dev-console-footer">
-              <div className="metric-cell">
-                <Terminal size={11} className="metric-icon" />
-                <span className="lbl font-mono">BUILD_ENV</span>
-                <span className="val font-mono" style={{ color: activeDetails.env === 'production' ? '#00e676' : '#ff9100' }}>
-                  {activeDetails.env.toUpperCase()}
-                </span>
+                <div className="hud-topbar-right">
+                  <span className="hud-label">ENV: <span style={{ color: displayDetails.env === 'production' ? '#00e676' : displayDetails.env === 'stable' ? '#38BDF8' : '#FF9A00' }}>{displayDetails.env.toUpperCase()}</span></span>
+                </div>
               </div>
-              <div className="metric-cell">
-                <span className="lbl font-mono">LATENCY_INDEX</span>
-                <span className="val font-mono">{activeDetails.latency}</span>
-              </div>
-              <div className="metric-cell">
-                <span className="lbl font-mono">BUNDLE_WEIGHT</span>
-                <span className="val font-mono">{activeDetails.bundleSize}</span>
-              </div>
-            </div>
 
+              {/* Software identity block */}
+              <div className="hud-identity">
+                <div className="hud-short-badge" style={{ color: displayTool.color, borderColor: `${displayTool.color}44`, boxShadow: `0 0 20px ${displayTool.color}22, inset 0 0 20px ${displayTool.color}08` }}>
+                  {displayTool.short}
+                </div>
+                <div className="hud-identity-text">
+                  <h3 className="hud-tool-name">{displayTool.name}</h3>
+                  <span className="hud-tool-cat" style={{ color: displayTool.color }}>{displayTool.category}</span>
+                </div>
+                <div className="hud-proficiency-ring">
+                  <ProficiencyRing level={displayTool.level} color={displayTool.color} size={64} />
+                </div>
+              </div>
+
+              {/* Horizontal rule */}
+              <div className="hud-rule" style={{ background: `linear-gradient(90deg, ${displayTool.color}44, transparent)` }} />
+
+              {/* Description */}
+              <p className="hud-desc">{displayDetails.desc}</p>
+
+              {/* Capabilities grid */}
+              <div className="hud-caps-label">VERIFIED CAPABILITIES</div>
+              <div className="hud-caps-grid">
+                {displayDetails.capabilities.map((cap, i) => (
+                  <div key={i} className="hud-cap-item" style={{ borderColor: `${displayTool.color}33` }}>
+                    <Zap size={10} style={{ color: displayTool.color, flexShrink: 0 }} />
+                    <span>{cap}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Metrics row */}
+              <div className="hud-metrics-row">
+                <div className="hud-metric">
+                  <Activity size={12} className="hud-metric-icon" style={{ color: displayTool.color }} />
+                  <span className="hud-metric-lbl">LATENCY</span>
+                  <span className="hud-metric-val">{displayDetails.latency}</span>
+                </div>
+                <div className="hud-metric">
+                  <Package size={12} className="hud-metric-icon" style={{ color: displayTool.color }} />
+                  <span className="hud-metric-lbl">BUNDLE</span>
+                  <span className="hud-metric-val">{displayDetails.bundleSize}</span>
+                </div>
+                <div className="hud-metric">
+                  <Shield size={12} className="hud-metric-icon" style={{ color: displayTool.color }} />
+                  <span className="hud-metric-lbl">UPTIME</span>
+                  <span className="hud-metric-val" style={{ color: displayTool.level > 80 ? '#00e676' : displayTool.level > 50 ? '#FF9A00' : '#FF5F56' }}>{displayDetails.uptime}</span>
+                </div>
+                <div className="hud-metric">
+                  <Clock size={12} className="hud-metric-icon" style={{ color: displayTool.color }} />
+                  <span className="hud-metric-lbl">PROFICIENCY</span>
+                  <span className="hud-metric-val">{displayTool.level}%</span>
+                </div>
+              </div>
+
+              {/* Bottom progress bar */}
+              <div className="hud-progress-wrap">
+                <div className="hud-progress-label">
+                  <span>INTEGRATION LEVEL</span>
+                  <span style={{ color: displayTool.color }}>{displayTool.level}%</span>
+                </div>
+                <div className="hud-progress-track">
+                  <div
+                    className="hud-progress-fill"
+                    style={{
+                      width: `${displayTool.level}%`,
+                      background: `linear-gradient(90deg, ${displayTool.color}88, ${displayTool.color})`,
+                      boxShadow: `0 0 10px ${displayTool.color}66`,
+                    }}
+                  />
+                  {/* Tick marks */}
+                  {[25, 50, 75].map(tick => (
+                    <div key={tick} className="hud-progress-tick" style={{ left: `${tick}%` }} />
+                  ))}
+                </div>
+              </div>
+
+            </div>
           </div>
 
-        </div>
-
-        {/* BOTTOM SECTION: Permanent stark capabilities grid */}
-        <div className="skills-capabilities-grid">
-          {skillCategories.map((cat) => (
-            <div key={cat.id} className="capability-editorial-card">
-              <div className="cap-card-header">
-                <span className="cap-card-num">{cat.id}</span>
-                <span className="cap-card-tag">{cat.tag}</span>
+          {/* Bottom capabilities grid */}
+          <div className="skills-capabilities-grid">
+            {skillCategories.map((cat) => (
+              <div key={cat.id} className="capability-editorial-card">
+                <div className="cap-card-header">
+                  <span className="cap-card-num">{cat.id}</span>
+                  <span className="cap-card-tag">{cat.tag}</span>
+                </div>
+                <h4 className="cap-card-title">{cat.title}</h4>
+                <div className="cap-card-divider"></div>
+                <ul className="cap-card-list">
+                  {cat.skills.map((skill, i) => (
+                    <li key={i} className="cap-card-item">
+                      <span className="cap-bullet-char">▪</span>
+                      <span className="cap-item-text">{skill}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              
-              <h4 className="cap-card-title">{cat.title}</h4>
-              <div className="cap-card-divider"></div>
-              
-              <ul className="cap-card-list">
-                {cat.skills.map((skill, i) => (
-                  <li key={i} className="cap-card-item">
-                    <span className="cap-bullet-char">▪</span>
-                    <span className="cap-item-text">{skill}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>{/* end skills-capabilities-grid */}
+            ))}
+          </div>
 
         </div>{/* end skills-desktop-layout */}
-
       </div>
     </section>
+  );
+}
+
+function BentoTile({ tool, isActive, onClick, className }) {
+  const Logo = TOOL_LOGOS[tool.name];
+  return (
+    <button
+      className={`bento-tile ${className} ${isActive ? 'bento-tile-active' : ''}`}
+      onClick={onClick}
+      style={{ '--tile-color': tool.color }}
+    >
+      {/* Active indicator glow layer */}
+      {isActive && <div className="bento-tile-glow" style={{ background: `radial-gradient(circle at 50% 50%, ${tool.color}18, transparent 70%)` }} />}
+
+      {/* Corner marker */}
+      <div className="bento-tile-corner" />
+
+      {/* Logo */}
+      <div className={`bento-tile-logo ${isActive ? 'bento-tile-logo-active' : ''}`}>
+        <Logo size={44} />
+      </div>
+
+      {/* Name + category */}
+      <div className="bento-tile-info">
+        <span className="bento-tile-name">{tool.name.replace('Adobe ', '')}</span>
+        <span className="bento-tile-cat">{tool.category}</span>
+      </div>
+
+      {/* Proficiency ring */}
+      <div className="bento-tile-ring">
+        <ProficiencyRing level={tool.level} color={isActive ? tool.color : 'rgba(255,255,255,0.2)'} size={42} />
+      </div>
+
+      {/* Active border glow */}
+      {isActive && (
+        <div className="bento-tile-active-border" style={{ boxShadow: `inset 0 0 0 1.5px ${tool.color}`, borderRadius: 'inherit' }} />
+      )}
+    </button>
   );
 }

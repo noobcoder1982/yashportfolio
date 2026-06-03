@@ -1,98 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import { Home, User, Layers, Film, Mail, ArrowUp, X, Menu } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 
 const NAV = [
-  { id: 'home',     num: '01', label: 'HOME',    icon: Home    },
-  { id: 'about',    num: '02', label: 'ABOUT',   icon: User    },
-  { id: 'skills',   num: '03', label: 'SKILLS',  icon: Layers  },
-  { id: 'projects', num: '04', label: 'WORKS',   icon: Film    },
-  { id: 'contact',  num: '05', label: 'CONTACT', icon: Mail    },
+  { id: 'home',     num: '01', label: 'HOME'    },
+  { id: 'about',    num: '02', label: 'ABOUT'   },
+  { id: 'skills',   num: '03', label: 'SKILLS'  },
+  { id: 'projects', num: '04', label: 'WORKS'   },
+  { id: 'contact',  num: '05', label: 'CONTACT' },
 ];
 
 export default function Header() {
   const [active, setActive]           = useState('home');
-  const [scrollPercent, setScrollPercent] = useState(0);
-  const [hovered, setHovered]         = useState(null);
-  const [menuOpen, setMenuOpen]       = useState(false);
+  const [scrollPct, setScrollPct]     = useState(0);
   const [isMobile, setIsMobile]       = useState(false);
+  const [menuOpen, setMenuOpen]       = useState(false);
+  const navRef                        = useRef(null);
+  const markerRef                     = useRef(null);
 
+  /* ── responsive breakpoint ── */
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 1024);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize, { passive: true });
-    return () => window.removeEventListener('resize', handleResize);
+    const check = () => setIsMobile(window.innerWidth <= 1024);
+    check();
+    window.addEventListener('resize', check, { passive: true });
+    return () => window.removeEventListener('resize', check);
   }, []);
 
-  /* Delhi IST Live Clock */
-  const [time, setTime] = useState('00:00:00');
+  /* ── Delhi IST clock ── */
+  const [time, setTime] = useState('');
   useEffect(() => {
-    const updateTime = () => {
-      const options = {
-        timeZone: 'Asia/Kolkata',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      };
-      const formatter = new Intl.DateTimeFormat([], options);
-      setTime(formatter.format(new Date()));
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
+    const fmt = new Intl.DateTimeFormat([], {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+    });
+    const tick = () => setTime(fmt.format(new Date()));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
   }, []);
 
-  /* Scroll tracking */
+  /* ── scroll + section tracking ── */
   useEffect(() => {
-    const isDesktop = !isMobile;
-    const scrollContainer = isDesktop ? (document.querySelector('.app-wrapper') || window) : window;
+    const scrollEl = !isMobile ? (document.querySelector('.app-wrapper') || window) : window;
 
     const onScroll = () => {
-      const el = scrollContainer === window ? document.documentElement : scrollContainer;
-      const scrollY = scrollContainer === window ? window.scrollY : scrollContainer.scrollTop;
-      const scrollHeight = el.scrollHeight;
-      const clientHeight = scrollContainer === window ? window.innerHeight : el.clientHeight;
-      const docH = scrollHeight - clientHeight;
-      const pct = docH > 0 ? Math.min(Math.max(scrollY / docH, 0), 1) : 0;
-      setScrollPercent(Math.round(pct * 100));
-      if (scrollY < 60) { setActive('home'); return; }
+      const el   = scrollEl === window ? document.documentElement : scrollEl;
+      const top  = scrollEl === window ? window.scrollY : scrollEl.scrollTop;
+      const max  = el.scrollHeight - (scrollEl === window ? window.innerHeight : el.clientHeight);
+      setScrollPct(max > 0 ? Math.round((top / max) * 100) : 0);
+      if (top < 60) setActive('home');
     };
 
-    scrollContainer.addEventListener('scroll', onScroll, { passive: true });
+    scrollEl.addEventListener('scroll', onScroll, { passive: true });
 
-    const rootEl = isDesktop ? document.querySelector('.app-wrapper') : null;
+    const root = !isMobile ? document.querySelector('.app-wrapper') : null;
     const io = new IntersectionObserver(
-      (entries) => {
-        const scrollY = scrollContainer === window ? window.scrollY : scrollContainer.scrollTop;
-        if (scrollY < 60) return;
+      entries => {
+        const top = scrollEl === window ? window.scrollY : scrollEl.scrollTop;
+        if (top < 60) return;
         entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
       },
-      { 
-        root: rootEl,
-        rootMargin: isDesktop ? '-80px 0px -45% 0px' : '-60px 0px -45% 0px', 
-        threshold: 0.1 
-      }
+      { root, rootMargin: '-80px 0px -45% 0px', threshold: 0.1 }
     );
-
-    NAV.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) io.observe(el);
-    });
-
+    NAV.forEach(({ id }) => { const el = document.getElementById(id); if (el) io.observe(el); });
     onScroll();
 
     return () => {
-      scrollContainer.removeEventListener('scroll', onScroll);
-      NAV.forEach(({ id }) => {
-        const el = document.getElementById(id);
-        if (el) io.unobserve(el);
-      });
+      scrollEl.removeEventListener('scroll', onScroll);
+      NAV.forEach(({ id }) => { const el = document.getElementById(id); if (el) io.unobserve(el); });
     };
   }, [isMobile]);
 
-  /* Lock body scroll when mobile menu is open */
+  /* ── GSAP: animate active marker pill ── */
+  useEffect(() => {
+    if (isMobile || !markerRef.current || !navRef.current) return;
+    const idx  = NAV.findIndex(n => n.id === active);
+    if (idx < 0) return;
+    const items  = navRef.current.querySelectorAll('.snav-item');
+    const target = items[idx];
+    if (!target) return;
+    const navTop  = navRef.current.getBoundingClientRect().top;
+    const itemTop = target.getBoundingClientRect().top;
+    const y = itemTop - navTop + target.offsetHeight / 2 - markerRef.current.offsetHeight / 2;
+    gsap.to(markerRef.current, { y, duration: 0.5, ease: 'expo.out' });
+  }, [active, isMobile]);
+
+  /* ── mobile scroll lock ── */
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -100,149 +92,110 @@ export default function Header() {
 
   const scrollTo = (id) => {
     setMenuOpen(false);
-    const targetEl = document.getElementById(id);
-    if (!targetEl) return;
-
-    const isMobileDevice = window.innerWidth <= 1024;
-    const offset = isMobileDevice ? 60 : 0;
-
-    if (isMobileDevice) {
-      const targetPosition = targetEl.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({
-        top: targetPosition - offset,
-        behavior: 'smooth'
-      });
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (isMobile) {
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 60, behavior: 'smooth' });
     } else {
-      const scrollContainer = document.querySelector('.app-wrapper');
-      if (scrollContainer) {
-        // Temporarily disable scroll snap to prevent delay/lag
-        scrollContainer.classList.add('no-snap');
-        
-        const containerRect = scrollContainer.getBoundingClientRect();
-        const targetRect = targetEl.getBoundingClientRect();
-        const relativeTop = targetRect.top - containerRect.top + scrollContainer.scrollTop;
-
-        scrollContainer.scrollTo({
-          top: relativeTop,
-          behavior: 'smooth'
-        });
-
-        // Re-enable scroll snap after transition
-        setTimeout(() => {
-          scrollContainer.classList.remove('no-snap');
-        }, 800);
+      const wrap = document.querySelector('.app-wrapper');
+      if (wrap) {
+        wrap.classList.add('no-snap');
+        const rel = el.getBoundingClientRect().top - wrap.getBoundingClientRect().top + wrap.scrollTop;
+        wrap.scrollTo({ top: rel, behavior: 'smooth' });
+        setTimeout(() => wrap.classList.remove('no-snap'), 800);
       }
     }
   };
 
+  /* ── vertical progress track height ── */
+  const progressHeight = `${scrollPct}%`;
 
   return (
     <>
-      {/* ── DESKTOP: Fixed vertical side nav (only when !isMobile) ── */}
+      {/* ════════════════════════════════════════
+          DESKTOP — slim vertical rail
+      ════════════════════════════════════════ */}
       {!isMobile && (
-        <aside className="brutalist-side-nav">
-          {/* TOP: Studio Logo Node */}
-          <div className="side-nav-brand">
-            <div className="brand-hexagon">
-              <span>YY</span>
-            </div>
-            <div className="brand-status-led">
-              <span className="led-dot green-led"></span>
-              <span className="led-label">LIVE.SYS</span>
-            </div>
+        <aside className="snav">
+
+          {/* left edge progress track */}
+          <div className="snav-track">
+            <div className="snav-track-fill" style={{ height: progressHeight }} />
           </div>
 
-          {/* MIDDLE: Nav markers */}
-          <nav className="side-nav-links-stack">
-            {NAV.map(({ id, num, label, icon: Icon }) => {
+          {/* top: monogram */}
+          <div className="snav-top">
+            <button className="snav-logo" onClick={() => scrollTo('home')} aria-label="Home">
+              <span className="snav-logo-inner">YY</span>
+            </button>
+          </div>
+
+          {/* middle: nav items */}
+          <nav ref={navRef} className="snav-nav">
+            {/* sliding active marker */}
+            <div ref={markerRef} className="snav-marker" aria-hidden="true" />
+
+            {NAV.map(({ id, num, label }) => {
               const isActive = active === id;
               return (
-                <a
+                <button
                   key={id}
-                  href={`#${id}`}
-                  className={`side-nav-btn ${isActive ? 'active-nav-btn' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollTo(id); }}
-                  onMouseEnter={() => setHovered(id)}
-                  onMouseLeave={() => setHovered(null)}
+                  className={`snav-item ${isActive ? 'snav-item-active' : ''}`}
+                  onClick={() => scrollTo(id)}
                   aria-label={label}
                 >
-                  <div className="nav-btn-indicator"></div>
-                  <div className="nav-btn-icon-wrap">
-                    <Icon size={18} strokeWidth={isActive ? 2.5 : 1.5} className="nav-icon-svg" />
-                  </div>
-                  <span className="nav-btn-num">{num}</span>
-                  <div className={`nav-btn-sliding-tag ${hovered === id ? 'hover-reveal' : ''}`}>
-                    <span className="tag-inner-txt">{label}</span>
-                  </div>
-                </a>
+                  <span className="snav-num">{num}</span>
+                  <span className="snav-label">{label}</span>
+                </button>
               );
             })}
           </nav>
 
-          {/* BOTTOM: Telemetry */}
-          <div className="side-nav-telemetry-console">
-            <div className="side-nav-audio-scope">
-              <div className="scope-bars">
-                <span className="audio-bar b1" />
-                <span className="audio-bar b2" />
-                <span className="audio-bar b3" />
-                <span className="audio-bar b4" />
-                <span className="audio-bar b5" />
-              </div>
-              <span className="scope-title">L/R MASTER</span>
+          {/* bottom: clock + scroll % */}
+          <div className="snav-bottom">
+            <div className="snav-clock">
+              <span className="snav-clock-time">{time}</span>
+              <span className="snav-clock-tz">IST</span>
             </div>
-
-            <div className="side-nav-clock-block">
-              <span className="clock-val">{time}</span>
-              <span className="clock-label">IST (DELHI)</span>
-            </div>
-
-            <div className="side-nav-progress-block">
-              <span className="progress-tag">READ: {scrollPercent}%</span>
-              <button
-                className="side-nav-top-btn"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                onMouseEnter={() => setHovered('top')}
-                onMouseLeave={() => setHovered(null)}
-                aria-label="Back to top"
-              >
-                <ArrowUp size={14} strokeWidth={2.5} />
-                <div className={`nav-btn-sliding-tag ${hovered === 'top' ? 'hover-reveal' : ''}`}>
-                  <span className="tag-inner-txt">BACK TO TOP</span>
-                </div>
-              </button>
+            <div className="snav-scroll-pct">
+              <span>{String(scrollPct).padStart(2, '0')}</span>
+              <span className="snav-pct-sym">%</span>
             </div>
           </div>
+
         </aside>
       )}
 
-      {/* ── MOBILE: Sleek branding top bar ── */}
+      {/* ════════════════════════════════════════
+          MOBILE — top bar
+      ════════════════════════════════════════ */}
       {isMobile && (
         <header className="mobile-top-bar">
           <div className="mobile-bar-brand">
-            <div className="mobile-brand-dot"></div>
+            <div className="mobile-brand-dot" />
             <span className="mobile-brand-name">YAR YASH</span>
             <div className="mobile-bar-led">
-              <span className="led-dot green-led"></span>
+              <span className="led-dot green-led" />
               <span className="mobile-bar-clock font-mono">{time}</span>
             </div>
           </div>
         </header>
       )}
 
-      {/* ── MOBILE: Sleek glassmorphic floating bottom pill nav dock ── */}
+      {/* ════════════════════════════════════════
+          MOBILE — bottom pill nav
+      ════════════════════════════════════════ */}
       {isMobile && (
         <nav className="mobile-floating-pill-nav">
-          {NAV.map(({ id, num, label, icon: Icon }) => {
+          {NAV.map(({ id, label }) => {
             const isActive = active === id;
             return (
               <button
                 key={id}
                 className={`mobile-pill-btn ${isActive ? 'active-pill' : ''}`}
-                onClick={(e) => { e.preventDefault(); scrollTo(id); }}
+                onClick={() => scrollTo(id)}
                 aria-label={label}
               >
-                <Icon size={18} strokeWidth={isActive ? 2.5 : 1.5} />
                 <span className="mobile-pill-label">{label}</span>
               </button>
             );
