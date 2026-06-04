@@ -38,8 +38,8 @@ export default function Hero() {
   };
 
   return (
-    <section 
-      id="home" 
+    <section
+      id="home"
       className="hero-section generative-hero brutalist-viewfinder-hero"
       onMouseMove={handleMouseMove}
     >
@@ -53,14 +53,14 @@ export default function Hero() {
         <div className="spotlight-grain"></div>
 
         <div className="hero-canvas-container">
-          
+
           {/* Sleek Cinematic Editor Dashboard */}
           <div className="editor-dashboard-container">
-            
+
             {/* Top Bar Strip */}
             <div className="dashboard-header-strip">
               <span className="tb-tag top-left">[ SYSTEM: CAFFEINATED ] // RENDER: READY</span>
-              
+
               {/* Color Strip Indicator */}
               <div className="brutal-color-strip">
                 <span className="cs-block cs-white"></span>
@@ -80,7 +80,7 @@ export default function Hero() {
               <div className="crop-mark mark-tr"></div>
               <div className="crop-mark mark-bl"></div>
               <div className="crop-mark mark-br"></div>
-              
+
               {/* Real-time laser scanner overlay when generating */}
               {isRendering && (
                 <div className="viewfinder-laser-overlay">
@@ -97,19 +97,19 @@ export default function Hero() {
 
               {/* Split layout: 2 Columns */}
               <div className="viewport-columns-grid">
-                
+
                 {/* Left Column: Editor text asset and specs */}
                 <div className="viewport-left-pane">
                   <div className="post-production-label reveal-text-item" style={{ animationDelay: '100ms' }}>
                     <Video size={14} className="video-icon" />
                     <span>POST PRODUCTION</span>
                   </div>
-                  
+
                   {/* Editor Text PNG Asset */}
                   <div className="editor-image-container reveal-text-item" style={{ animationDelay: '250ms' }}>
-                    <img 
-                      src="/assets/editor.png" 
-                      alt="EDITOR" 
+                    <img
+                      src="/assets/editor.png"
+                      alt="EDITOR"
                       className={`editor-text-image ${isRendering ? 'rendering' : ''}`}
                     />
                     <div className="image-glow-overlay"></div>
@@ -144,13 +144,13 @@ export default function Hero() {
                 {/* Right Column: Bio details and static telemetry image */}
                 <div className="viewport-right-pane">
                   <div className="top-accent-line"></div>
-                  
+
                   <h1 className="editor-title-yar-yash reveal-text-item" style={{ animationDelay: '200ms' }}>
                     YAR <span className="red-text">YASH</span>
                   </h1>
-                  
+
                   <div className="film-editor-tag reveal-text-item" style={{ animationDelay: '350ms' }}>
-                    FILM EDITOR
+                    FREELANCER
                   </div>
 
                   {/* Divider Line with Red Circle */}
@@ -166,9 +166,9 @@ export default function Hero() {
 
                   {/* Highly authentic static graph and compass asset replacement */}
                   <div className="telemetry-box image-telemetry-box reveal-text-item" style={{ animationDelay: '750ms' }}>
-                    <img 
-                      src="/assets/telemetry.png" 
-                      alt="Telemetry Graph & Compass Panel" 
+                    <img
+                      src="/assets/telemetry.png"
+                      alt="Telemetry Graph & Compass Panel"
                       className="telemetry-asset-image"
                     />
                   </div>
@@ -178,14 +178,14 @@ export default function Hero() {
 
             {/* Bottom Panel Row */}
             <div className="dashboard-controls-row">
-              
+
               {/* Prompt Input Group */}
               <div className="control-group prompt-group">
                 <span className="control-label">PROMPT</span>
                 <div className="prompt-input-container">
-                  <input 
-                    type="text" 
-                    className="control-input prompt-textbox" 
+                  <input
+                    type="text"
+                    className="control-input prompt-textbox"
                     value={promptText}
                     onChange={(e) => setPromptText(e.target.value)}
                     disabled={isRendering}
@@ -202,8 +202,8 @@ export default function Hero() {
               <div className="control-group dropdown-group">
                 <span className="control-label">STYLE</span>
                 <div className="custom-dropdown-select">
-                  <select 
-                    value={selectedStyle} 
+                  <select
+                    value={selectedStyle}
                     onChange={(e) => setSelectedStyle(e.target.value)}
                     disabled={isRendering}
                   >
@@ -220,8 +220,8 @@ export default function Hero() {
               <div className="control-group dropdown-group">
                 <span className="control-label">PRESET</span>
                 <div className="custom-dropdown-select">
-                  <select 
-                    value={selectedPreset} 
+                  <select
+                    value={selectedPreset}
                     onChange={(e) => setSelectedPreset(e.target.value)}
                     disabled={isRendering}
                   >
@@ -235,7 +235,7 @@ export default function Hero() {
               </div>
 
               {/* Generate Action Button */}
-              <button 
+              <button
                 className={`control-generate-btn ${isRendering ? 'rendering' : ''}`}
                 onClick={handleGenerate}
                 disabled={isRendering}
@@ -293,9 +293,9 @@ export default function Hero() {
             }}>
               <span>Selected Cuts</span>
             </button>
-            
-            <button 
-              className="btn btn-secondary" 
+
+            <button
+              className="btn btn-secondary"
               style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#ffffff' }}
               onClick={() => {
                 const el = document.getElementById('contact');
