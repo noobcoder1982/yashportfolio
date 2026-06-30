@@ -15,12 +15,23 @@ const DiscordIcon = ({ size = 18 }) => (
 
 export default function Contact() {
   const [copiedEmail, setCopiedEmail] = useState(null);
-  const [discordStats, setDiscordStats] = useState(null);
+  const [discordStats, setDiscordStats] = useState({
+    name: 'YAR YASH STUDIO',
+    description: 'A visual design community for creators, motion designers, and video editors.',
+    iconUrl: null,
+    members: 142,
+    online: 26
+  });
   const [discordLoading, setDiscordLoading] = useState(true);
 
   useEffect(() => {
     fetch('https://discord.com/api/v9/invites/bahjQrDjw?with_counts=true')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         if (data && data.guild) {
           setDiscordStats({
@@ -32,11 +43,13 @@ export default function Contact() {
             members: data.approximate_member_count || 120,
             online: data.approximate_presence_count || 15
           });
+        } else {
+          throw new Error('Invalid Discord invite data');
         }
         setDiscordLoading(false);
       })
       .catch(err => {
-        console.log('Error fetching Discord details:', err);
+        console.log('Error fetching Discord details, using fallback:', err);
         setDiscordStats({
           name: 'YAR YASH STUDIO',
           description: 'A visual design community for creators, motion designers, and video editors.',
@@ -217,7 +230,7 @@ export default function Contact() {
             ) : (
               <div className="bento-card-body discord-body-layout">
                 <div className="discord-left-info">
-                  {discordStats.iconUrl ? (
+                  {discordStats?.iconUrl ? (
                     <img src={discordStats.iconUrl} alt="Server icon" className="dcard-server-avatar" />
                   ) : (
                     <div className="dcard-server-avatar-fallback">
@@ -225,8 +238,8 @@ export default function Contact() {
                     </div>
                   )}
                   <div className="dcard-server-info">
-                    <h4 className="dcard-server-name">{discordStats.name}</h4>
-                    <p className="dcard-server-desc">{discordStats.description}</p>
+                    <h4 className="dcard-server-name">{discordStats?.name || 'YAR YASH STUDIO'}</h4>
+                    <p className="dcard-server-desc">{discordStats?.description || 'A visual design community for creators, motion designers, and video editors.'}</p>
                   </div>
                 </div>
 
@@ -234,11 +247,11 @@ export default function Contact() {
                   <div className="dcard-stats-hud">
                     <div className="dcard-stat">
                       <span className="dcard-dot green-dot"></span>
-                      <span className="dcard-val">{discordStats.online} Online</span>
+                      <span className="dcard-val">{discordStats?.online ?? 26} Online</span>
                     </div>
                     <div className="dcard-stat">
                       <span className="dcard-dot grey-dot"></span>
-                      <span className="dcard-val">{discordStats.members} Members</span>
+                      <span className="dcard-val">{discordStats?.members ?? 142} Members</span>
                     </div>
                   </div>
 

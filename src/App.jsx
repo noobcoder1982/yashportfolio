@@ -7,6 +7,7 @@ import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
 import SeekBar from './components/SeekBar';
+import FilmCursor from './components/FilmCursor';
 import Footer from './components/Footer';
 import './App.css';
 
@@ -34,6 +35,7 @@ export default function App() {
       {phase !== 'done' && <Preloader onComplete={handlePreloaderExit} />}
 
       <SeekBar />
+      <FilmCursor />
 
       <div className={`app-wrapper ${phase !== 'loading' ? 'fade-in-ready' : ''} ${phase === 'done' ? 'content-visible' : ''}`}>
         <Header />
